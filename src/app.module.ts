@@ -8,7 +8,6 @@ import { BoardModule } from './board/board.module';
 import { FriendModule } from './friend/friend.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { User } from './users/entities/user.entity';
 
 @Module({
   controllers: [AppController, CatsController],
@@ -18,14 +17,14 @@ import { User } from './users/entities/user.entity';
     SearchModule,
     BoardModule,
     FriendModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      entities: [User],
+      entities: [],
       synchronize: true,
     }),
   ],
