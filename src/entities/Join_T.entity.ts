@@ -15,7 +15,7 @@ export class Join_T {
   title: string;
 
   @Column()
-  location: number;
+  location: string;
 
   @CreateDateColumn()
   created_at: Date;

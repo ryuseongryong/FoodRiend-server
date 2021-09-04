@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm/index';
-import { Users } from './Users_entity';
+import { Users } from './Users.entity';
 
 @Entity()
 export class Friend_List {
@@ -19,7 +19,7 @@ export class Friend_List {
   @Column()
   friend: number;
 
-  @Column()
+  @Column({ default: false })
   isDeleted: boolean;
 
   @CreateDateColumn()
@@ -28,6 +28,8 @@ export class Friend_List {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne((type) => Users, (users) => users.id)
+  @ManyToOne(() => Users, (users) => users.id, {
+    cascade: ['update', 'remove'],
+  })
   users: Users;
 }
