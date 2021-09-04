@@ -16,7 +16,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('verfiy/:type')
-  create(@Body() createUserDto: CreateUserDto) {}
+  create(@Body() dto: CreateUserDto) {
+    this.usersService.create(dto);
+  }
 
   @Get('verify/token')
   findAll() {}
