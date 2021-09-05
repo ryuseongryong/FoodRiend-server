@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Hashtag } from '../entities/Hashtag.entity';
 import { Join_T } from '../entities/Join_T.entity';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { Upload_Image } from '../entities/Upload_Image.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Injectable()
 export class BoardService {
@@ -15,17 +16,55 @@ export class BoardService {
   private readonly hashtagRepository: Repository<Hashtag>;
   @InjectRepository(Join_T)
   private readonly joinTRepository: Repository<Join_T>;
+  @InjectRepository(Upload_Image)
+  private readonly uploadImageRepository: Repository<Upload_Image>;
 
   async create(id: number, dto: CreateBoardDto) {
-    // const existTitle = await this.joinTRepository.findOne({
-    //   title: dto.title,
-    // });
-    const resJoinT = await this.joinTRepository.save({
-      title: dto.title,
-      location: dto.location,
+    const existTitle = await this.joinTRepository.find({
+      id: dto.shopId,
     });
-    console.log(resJoinT);
-    await this.boardRepository.save({ user_id: id });
-    console.log(id, dto);
+
+    if (existTitle.length === 0) {
+      throw new HttpException('Not found shop', 401);
+    }
+
+    const writeBoard = await this.boardRepository.save({
+      user_id: id,
+      rating: dto.rating,
+      best: false,
+      isDeleted: false,
+      join_t_id: existTitle[0].id,
+      comments: dto.comments,
+    });
+
+    for (let i = 0; i < dto.hashtag.length; i++) {
+      await this.hashtagRepository.save({
+        write_board_id: writeBoard.id,
+        tag: dto.hashtag[i],
+      });
+    }
+
+    for (let i = 0; i < dto.img.length; i++) {
+      await this.uploadImageRepository.save({
+        foodImage: dto.img[i],
+        write_board_id: writeBoard.id,
+        house_info_id: existTitle[0].id,
+      });
+    }
+
+    return {
+      data: {
+        feed: {
+          feedId: writeBoard.id,
+          title: dto.title,
+          Hashtag: dto.hashtag,
+          location: dto.location,
+          img: dto.img,
+          rating: dto.rating,
+          comments: dto.comments,
+        },
+        status: 200,
+      },
+    };
   }
 }
