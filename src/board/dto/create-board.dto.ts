@@ -1,10 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class CreateBoardDto {
-  @IsString()
+  @IsNumber()
+  readonly shopId: number;
+
+  @IsArray()
   //   @ApiProperty({ description: '이미지' })
-  readonly img: string;
+  readonly img: string[];
 
   @IsNumber()
   //   @ApiProperty()
@@ -14,9 +17,9 @@ export class CreateBoardDto {
   //   @ApiProperty()
   readonly comments: string;
 
-  @IsString()
+  @IsArray()
   //   @ApiProperty()
-  readonly hashtag: string;
+  readonly hashtag: string[];
 
   @IsString()
   //   @ApiProperty()
