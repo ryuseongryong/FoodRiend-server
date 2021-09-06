@@ -67,4 +67,35 @@ export class BoardService {
       },
     };
   }
+
+  async delete(id: number) {
+    const existBoard = await this.boardRepository.find({
+      id: id,
+    });
+
+    if (existBoard.length === 0) {
+      return new HttpException('Not found board', 401);
+    }
+
+    await this.boardRepository.update(
+      {
+        isDeleted: false,
+        id: id,
+      },
+      { isDeleted: true },
+    );
+    await this.hashtagRepository.delete({
+      write_board_id: id,
+    });
+    await this.uploadImageRepository.delete({
+      write_board_id: id,
+    });
+
+    return {
+      data: {
+        feedId: id,
+      },
+      status: 200,
+    };
+  }
 }
