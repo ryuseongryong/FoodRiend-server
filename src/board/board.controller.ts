@@ -1,25 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
-import {
-  ApiBody,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiProperty,
-  getSchemaPath,
-} from '@nestjs/swagger';
-import { Write_Board } from '../entities/Write_Board.entity';
+import { ApiBody, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+
 const resCreateBoard = {
   schema: {
     properties: {
@@ -44,14 +27,15 @@ const resCreateBoard = {
     },
   },
 };
-@Controller('board')
+
+@Controller('api/board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   @Post('write/:id')
   @ApiOperation({
     summary: '게시물 등록 API',
-    description: '게시물을 등록한다',
+    description: '게시물 등록',
   })
   @ApiOkResponse(resCreateBoard)
   @ApiBody({ type: CreateBoardDto })
@@ -60,5 +44,7 @@ export class BoardController {
   }
 
   @Delete('delete/:id')
-  remove(@Param('id') id: string) {}
+  remove(@Param('id') id: number) {
+    return this.boardService.delete(id);
+  }
 }
