@@ -4,7 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm/index';
+import { Shop_Info } from './Shop_Info.entity';
+import { Users } from './Users.entity';
 
 @Entity()
 export class Bookmark {
@@ -22,4 +26,12 @@ export class Bookmark {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @ManyToOne(() => Users)
+  @JoinColumn({ name: 'user_id' })
+  user!: Users;
+
+  @ManyToOne(() => Shop_Info)
+  @JoinColumn({ name: 'house_info_id' })
+  shopInfo!: Shop_Info;
 }

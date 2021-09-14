@@ -16,15 +16,15 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('verfiy/:type')
-  create(@Body() dto: CreateUserDto) {
-    this.usersService.create(dto);
-  }
+  create(@Body() dto: CreateUserDto) {}
 
   @Get('verify/token')
   findAll() {}
 
   @Get('profile/:id')
-  findOne(@Param('id') id: string) {}
+  getUserInfo(@Param('id') id: number) {
+    this.usersService.getUserInfo(id);
+  }
 
   @Patch('profile/:id')
   update(@Param('id') id: string) {}
