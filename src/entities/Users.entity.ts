@@ -39,7 +39,7 @@ export class Users {
   @Column()
   foodStyle: string;
 
-  @Column()
+  @Column({ default: false })
   isDeleted: boolean;
 
   @CreateDateColumn()
@@ -48,15 +48,19 @@ export class Users {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => Friend_List, (friend_list) => friend_list.user_id)
+  @OneToMany(() => Friend_List, (friendList) => friendList.user_id, {
+    cascade: ['update', 'remove'],
+  })
   friendList: Friend_List[]; // method
 
-  @ManyToMany(() => Shop_Info)
+  @ManyToMany(() => Shop_Info, { cascade: ['remove', 'update'] })
   @JoinTable({ name: 'Bookmark' })
   bookmark: Bookmark[];
   users: Users[];
   shopInfo: Shop_Info[];
 
-  @OneToMany(() => Write_Board, (writeBoard) => writeBoard.user_id)
+  @OneToMany(() => Write_Board, (writeBoard) => writeBoard.user_id, {
+    cascade: ['remove', 'update'],
+  })
   board: Write_Board[];
 }

@@ -6,20 +6,29 @@ import {
   Patch,
   Param,
   Delete,
+  Injectable,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
+@Injectable()
 @Controller('api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('verfiy/:type')
-  create(@Body() createUserDto: CreateUserDto) {}
+  @Post('verify/:type')
+  create(@Body() dto: CreateUserDto) {
+    this.usersService.create(dto);
+  }
 
   @Get('verify/token')
-  findAll() {}
+  @UseGuards(AuthGuard('bearer'))
+  findAll() {
+    return [];
+  }
 
   @Get('profile/:id')
   findOne(@Param('id') id: string) {}
