@@ -7,6 +7,7 @@ import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -20,5 +21,6 @@ import { Hashtag } from '../entities/Hashtag.entity';
   ],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

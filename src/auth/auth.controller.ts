@@ -23,17 +23,24 @@ export class UsersController {
   create(@Body() dto: CreateUserDto) {
     this.usersService.create(dto);
   }
+
   @Get('verify/token')
   @UseGuards(AuthGuard('bearer'))
   findAll() {
     return [];
   }
 
-  @Get('profile/:id')
-  getUserInfo(@Param('id') id: number) {
-    this.usersService.getUserInfo(id);
-  }
+ 
+}
 
-  @Patch('profile/:id')
-  update(@Param('id') id: string) {}
+
+@Controller('api/user')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('verify/token')
+  getProfile(@Req() req) {
+    return req.user;
+  }
 }
