@@ -23,7 +23,6 @@ export class UsersController {
   create(@Body() dto: CreateUserDto) {
     this.usersService.create(dto);
   }
-
   @Get('verify/token')
   @UseGuards(AuthGuard('bearer'))
   findAll() {
@@ -31,7 +30,9 @@ export class UsersController {
   }
 
   @Get('profile/:id')
-  findOne(@Param('id') id: string) {}
+  getUserInfo(@Param('id') id: number) {
+    this.usersService.getUserInfo(id);
+  }
 
   @Patch('profile/:id')
   update(@Param('id') id: string) {}
