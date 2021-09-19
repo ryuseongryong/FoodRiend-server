@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm/index';
 import { Users } from './Users.entity';
 
@@ -14,7 +15,7 @@ export class Friend_List {
   id: number;
 
   @Column()
-  user_id: string;
+  user_id: number;
 
   @Column()
   friend: number;
@@ -28,8 +29,10 @@ export class Friend_List {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => Users, (users) => users.id, {
-    cascade: ['update', 'remove'],
+  @ManyToOne(() => Users)
+  @JoinColumn({
+    name: 'user_id',
+    referencedColumnName: 'id',
   })
   users: Users;
 }

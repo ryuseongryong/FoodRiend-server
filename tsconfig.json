@@ -10,7 +10,7 @@
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "allowJs": true,
+      //"allowJs": true,
       "sourceMap": true
    }
 }

@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm/index';
+import { Write_Board } from './Write_Board.entity';
 
 @Entity()
 export class Hashtag {
@@ -22,4 +25,11 @@ export class Hashtag {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @ManyToOne(() => Write_Board)
+  @JoinColumn({
+    name: 'write_board_id',
+    referencedColumnName: 'id',
+  })
+  writeBoard: Write_Board;
 }
