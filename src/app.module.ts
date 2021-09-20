@@ -29,10 +29,10 @@ import { Upload_Image } from './entities/Upload_Image.entity';
       synchronize: false, //true : 테이블 생성 후 싱크 맞춰추기 // false : 작동안함
       type: 'mysql',
       host: process.env.DB_HOST,
-      port: Number(process.env.DB_HOST),
+      port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      database: process.env.DB_NAME,
       entities: [
         Write_Board,
         Users,

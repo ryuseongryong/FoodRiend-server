@@ -62,3 +62,9 @@ npm run test
 ```
 npm run migration:run
 ```
+
+# env
+
+### docker
+
+.env 변수명 DB_HOST을 host.docker.internal로 변경

@@ -101,7 +101,6 @@ export class UsersService {
       isData: isData,
     };
   }
-}
 
   async update(id: number, dto: PatchUserDto) {
     const user = await this.usersRepository.findOne({ id: id });
@@ -125,3 +124,4 @@ export class UsersService {
       status: 200,
     };
   }
+}

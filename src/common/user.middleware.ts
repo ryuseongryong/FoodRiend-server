@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRepository, Repository } from 'typeorm';
-import { Users } from '../entities/Users_entity';
 import { Join_T } from '../entities/Join_T.entity';
 import { Shop_Info } from '../entities/Shop_Info.entity';
 import { Users } from '../entities/Users.entity';
@@ -8,22 +7,21 @@ import axios from 'axios';
 import { Hashtag } from '../entities/Hashtag.entity';
 import { Friend_List } from '../entities/Friend_List.entity';
 
-
 export async function UserMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
-  const { id } = req.params;
-  const joinT: Repository<Join_T> = getRepository(Join_T);
-  const usersRepository: Repository<Users> = getRepository(Users);
-  const shoptest: Repository<Shop_Info> = getRepository(Shop_Info);
-  const friendList: Repository<Friend_List> = getRepository(Friend_List);
+  // const { id } = req.params;
+  // const joinT: Repository<Join_T> = getRepository(Join_T);
+  // const usersRepository: Repository<Users> = getRepository(Users);
+  // const shoptest: Repository<Shop_Info> = getRepository(Shop_Info);
+  // const friendList: Repository<Friend_List> = getRepository(Friend_List);
 
-  // await joinT.save({ title: '스타벅스 원흥점', location: '원흥역' });
-  // await joinT.save({ title: '쿠우쿠우', location: '홍대' });
-  const usersRepository: Repository<Users> = getRepository(Users);
- 
+  // // await joinT.save({ title: '스타벅스 원흥점', location: '원흥역' });
+  // // await joinT.save({ title: '쿠우쿠우', location: '홍대' });
+  // const usersRepository: Repository<Users> = getRepository(Users);
+
   // ({
   //   name: '이름',
   //   nickname: '닉네임',
