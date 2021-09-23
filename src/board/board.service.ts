@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Hashtag } from '../entities/Hashtag.entity';
 import { Join_T } from '../entities/Join_T.entity';
-import { Shop_Info } from '../entities/Shop_Info.entity';
 import { Upload_Image } from '../entities/Upload_Image.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { CreateBoardDto } from './dto/create-board.dto';

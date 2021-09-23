@@ -1,33 +1,9 @@
 import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { ApiBody, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
-const resCreateBoard = {
-  schema: {
-    properties: {
-      data: {
-        type: 'object',
-        properties: {
-          feed: {
-            type: 'object',
-            properties: {
-              feedId: { type: 'number' },
-              title: { type: 'string' },
-              hashtag: { type: 'array' },
-              img: { type: 'string' },
-              location: { type: 'string' },
-              rating: { type: 'string' },
-              comments: { type: 'string' },
-            },
-          },
-        },
-      },
-      status: { type: 'number' },
-    },
-  },
-};
-
+@ApiTags('Board')
 @Controller('api/board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
@@ -37,13 +13,18 @@ export class BoardController {
     summary: '게시물 등록 API',
     description: '게시물 등록',
   })
-  @ApiOkResponse(resCreateBoard)
   @ApiBody({ type: CreateBoardDto })
+  @ApiParam({ name: 'id' })
   create(@Param('id') id: number, @Body() dto: CreateBoardDto) {
     return this.boardService.create(id, dto);
   }
 
   @Delete('delete/:id')
+  @ApiOperation({
+    summary: '게시물 삭제 API',
+    description: '게시물 삭제',
+  })
+  @ApiParam({ name: 'id' })
   remove(@Param('id') id: number) {
     return this.boardService.delete(id);
   }
