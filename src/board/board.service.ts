@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Hashtag } from '../entities/Hashtag.entity';
-import { Join_T } from '../entities/Join_T.entity';
+import { Shop_Info } from '../entities/Shop_Info.entity';
 import { Upload_Image } from '../entities/Upload_Image.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -13,13 +13,13 @@ export class BoardService {
   private readonly boardRepository: Repository<Write_Board>;
   @InjectRepository(Hashtag)
   private readonly hashtagRepository: Repository<Hashtag>;
-  @InjectRepository(Join_T)
-  private readonly joinTRepository: Repository<Join_T>;
+  @InjectRepository(Shop_Info)
+  private readonly shopInfoRepository: Repository<Shop_Info>;
   @InjectRepository(Upload_Image)
   private readonly uploadImageRepository: Repository<Upload_Image>;
 
   async create(id: number, dto: CreateBoardDto) {
-    const existTitle = await this.joinTRepository.find({
+    const existTitle = await this.shopInfoRepository.find({
       id: dto.shopId,
     });
 
@@ -32,7 +32,7 @@ export class BoardService {
       rating: dto.rating,
       best: false,
       isDeleted: false,
-      join_t_id: existTitle[0].id,
+      house_info_id: existTitle[0].id,
       comments: dto.comments,
     });
 

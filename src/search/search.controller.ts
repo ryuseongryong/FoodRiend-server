@@ -16,8 +16,13 @@ import { UpdateSearchDto } from './dto/update-search.dto';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
+  @Get('feed/:id')
+  mainPage(@Param('id') id: number) {
+    return this.searchService.mainPage(id);
+  }
+
   @Get('result/:id')
-  findAll(@Param('id') id: string, @Query() query: string) {}
+  findAll(@Param('id') id: string, @Query('search_query') query: string) {}
 
   @Get('friend/:id')
   findOne(@Param('id') id: string, @Query() query: string) {}

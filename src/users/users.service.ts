@@ -59,15 +59,15 @@ export class UsersService {
       .createQueryBuilder('writeBoard')
       .leftJoinAndSelect('writeBoard.img', 'img')
       .leftJoinAndSelect('writeBoard.hashtag', 'hashtag')
-      .leftJoinAndSelect('writeBoard.joinT', 'joinT')
+      .leftJoinAndSelect('writeBoard.shopInfo', 'shopInfo')
       .select([
         'img.foodImage',
         'writeBoard.id',
         'writeBoard.rating',
         'writeBoard.comments',
         'hashtag.tag',
-        'joinT.title',
-        'joinT.location',
+        'shopInfo.title',
+        'shopInfo.location',
       ])
       .where('writeBoard.user_id = :id', { id: id })
       .getMany();
@@ -80,9 +80,9 @@ export class UsersService {
       customFeed = feedData.map((el) => {
         el.feedId = el.id;
         delete el.id;
-        el.title = el.joinT.title;
-        el.location = el.joinT.location;
-        delete el.joinT;
+        el.title = el.shopInfo.title;
+        el.location = el.shopInfo.location;
+        delete el.shopInfo;
         return el;
       });
     } else {

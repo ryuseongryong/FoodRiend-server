@@ -12,7 +12,6 @@ import { Users } from './entities/Users.entity';
 import { Bookmark } from './entities/Bookmark.entity';
 import { Friend_List } from './entities/Friend_List.entity';
 import { Hashtag } from './entities/Hashtag.entity';
-import { Join_T } from './entities/Join_T.entity';
 import { Shop_Info } from './entities/Shop_Info.entity';
 import { Upload_Image } from './entities/Upload_Image.entity';
 
@@ -40,9 +39,9 @@ import { Upload_Image } from './entities/Upload_Image.entity';
         Upload_Image,
         Hashtag,
         Shop_Info,
-        Join_T,
         Friend_List,
       ],
+      
     }),
   ],
 })

@@ -10,7 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm/index';
 import { Hashtag } from './Hashtag.entity';
-import { Join_T } from './Join_T.entity';
+import { Shop_Info } from './Shop_Info.entity';
 import { Upload_Image } from './Upload_Image.entity';
 import { Users } from './Users.entity';
 
@@ -23,7 +23,7 @@ export class Write_Board {
   user_id: number;
 
   @Column()
-  join_t_id: number;
+  house_info_id: number;
 
   @Column()
   rating: number;
@@ -43,12 +43,12 @@ export class Write_Board {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => Join_T)
+  @ManyToOne(() => Shop_Info)
   @JoinColumn({
-    name: 'join_t_id',
+    name: 'house_info_id',
     referencedColumnName: 'id',
   })
-  joinT: Join_T;
+  shopInfo: Shop_Info;
 
   @ManyToOne(() => Users)
   @JoinColumn({
