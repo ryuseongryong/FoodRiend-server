@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRepository, Repository } from 'typeorm';
-import { Join_T } from '../entities/Join_T.entity';
 import { Shop_Info } from '../entities/Shop_Info.entity';
 import { Users } from '../entities/Users.entity';
 import axios from 'axios';
