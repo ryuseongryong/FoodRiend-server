@@ -1,14 +1,12 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto, PatchUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { PatchUserDto } from './dto/create-user.dto';
 import { Users } from '../entities/Users.entity';
 import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
-import { Upload_Image } from '../entities/Upload_Image.entity';
 
 @Injectable()
 export class UsersService {

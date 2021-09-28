@@ -17,24 +17,9 @@ export async function UserMiddleware(
   // const shoptest: Repository<Shop_Info> = getRepository(Shop_Info);
   // const friendList: Repository<Friend_List> = getRepository(Friend_List);
 
-  // // await joinT.save({ title: '스타벅스 원흥점', location: '원흥역' });
-  // // await joinT.save({ title: '쿠우쿠우', location: '홍대' });
-  // const usersRepository: Repository<Users> = getRepository(Users);
+  // await joinT.save({ title: '스타벅스 원흥점', location: '원흥역' });
+  // await joinT.save({ title: '쿠우쿠우', location: '홍대' });
 
-  // ({
-  //   name: '이름',
-  //   nickname: '닉네임',
-  //   password: '비밀번호',
-  //   profileImage: 'url',
-  //   phoneNumber: '연락처',
-  //   foodType: '맛집스타일',
-  //   foodStyle: '음식취향',
-  //   isDeleted: false,
-  // });
-
-  // const test: Repository<Join_T> = getRepository(Join_T);
-  // test.save({ title: '스타벅스 원흥점', location: '원흥역' });
-  // const usersRepository: Repository<Users> = getRepository(Users);
   // await usersRepository.save({
   //   name: 'minwoo',
   //   nickname: 'justmin',
