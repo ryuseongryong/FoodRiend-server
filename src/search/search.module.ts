@@ -7,6 +7,8 @@ import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { Upload_Image } from '../entities/Upload_Image.entity';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { Hashtag } from '../entities/Hashtag.entity';
       Write_Board,
       Bookmark,
       Hashtag,
+      Shop_Info,
+      Upload_Image
     ]),
   ],
   controllers: [SearchController],

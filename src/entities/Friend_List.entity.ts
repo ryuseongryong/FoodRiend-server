@@ -34,5 +34,5 @@ export class Friend_List {
     name: 'user_id',
     referencedColumnName: 'id',
   })
-  users: Users;
+  user: Users;
 }
