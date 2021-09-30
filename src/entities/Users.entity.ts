@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm/index';
+import { Friend_List } from './Friend_List.entity';
 
 @Entity()
 export class Users {
@@ -40,4 +42,7 @@ export class Users {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @OneToMany(() => Friend_List, (friendList) => friendList.user)
+  friendList: Friend_List[];
 }

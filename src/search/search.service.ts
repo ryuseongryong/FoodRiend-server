@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder } from 'typeorm';
+import { Repository, createQueryBuilder, Like, ILike } from 'typeorm';
 import { CreateSearchDto } from './dto/create-search.dto';
 import { UpdateSearchDto } from './dto/update-search.dto';
 import { Users } from '../entities/Users.entity';
@@ -10,6 +10,8 @@ import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
 import { Upload_Image } from '../entities/Upload_Image.entity';
 import { NotFoundError } from 'rxjs';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { useRefreshDatabase } from 'typeorm-seeding';
 
 @Injectable()
 export class SearchService {
@@ -24,6 +26,11 @@ export class SearchService {
     private readonly bookmarkRepository: Repository<Bookmark>,
     @InjectRepository(Hashtag)
     private readonly hashtagRepository: Repository<Hashtag>,
+    @InjectRepository(Shop_Info)
+    private readonly shopInfoRepository:
+    Repository<Shop_Info>,
+    @InjectRepository(Upload_Image)
+    private readonly uploadImageRepository: Repository<Upload_Image>
   ) {}
 
   create(createSearchDto: CreateSearchDto) {
@@ -38,29 +45,21 @@ export class SearchService {
     // Friend - user id,
     //          name,
     //          profileImage,
-    // shopInfo - mainImage
-    //            location,
+    // uploadImage - foodImage,
+    // shopInfo - location,
     //            title,
     // Hashtag - tag,
     // WriteBoard - comments,
     //              rating,
     //              created_at
     const userData = await this.usersRepository.find({id: id});
+
     if(userData.length === 0) return new HttpException('There is no Friend', 404);
 
     // 1. user의 friendsList를 바탕으로 해당 friend의 Id를 가져온다.
     const friendsListData = await this.friendListRepository.find({
       user_id: id,
     });
-    /* [{
-      id: 3,
-      user_id: 2,
-      friend: 3,
-      isDeleted: false,
-      created_at: 2021-09-27T01:52:28.774Z,
-      updated_at: 2021-09-27T01:52:28.774Z
-    }]*/
-
     // 친구가 없는 애는 status : 200, isData = false
     // 가입하지 않은 유저는 에러
     let isData = true;
@@ -82,7 +81,7 @@ export class SearchService {
         'shopInfo.title',
         'shopInfo.location',
         // upload_Image - foodImage
-        'shopInfo.mainImage',
+        'img.foodImage',
         'writeBoard.rating',
         'writeBoard.comments',
         'hashtag.tag',
@@ -91,6 +90,7 @@ export class SearchService {
       .leftJoin('writeBoard.user', 'user')
       .leftJoin('writeBoard.hashtag', 'hashtag')
       .leftJoin('writeBoard.shopInfo', 'shopInfo')
+      .leftJoin('writeBoard.img', 'img')
       .where('writeBoard.user_id IN (:id)', { id: friendList })
       .getMany();
 
@@ -99,9 +99,9 @@ export class SearchService {
         userId: el.user.id,
         name: el.user.name,
         profile: el.user.profileImage,
-        image: el.shopInfo.mainImage,
+        image: el.img.map((el) => el.foodImage),
         // 배열 내 객체 형태, hashtag: el.hashtag,
-        hashtag: el.hashtag.map((hashtag) => hashtag.tag),
+        hashtag: el.hashtag.map((hashtagEl) => hashtagEl.tag),
         location: el.shopInfo.location,
         title: el.shopInfo.title,
         comments: el.comments,
@@ -113,11 +113,144 @@ export class SearchService {
     return { data: refinedData, status: 200, isData: isData };
   }
 
-  findAll() {
-    return `This action returns all search`;
+  async findResult(id: number, query: string) {
+    
+    // user : 
+    //   user - user id,
+    //          name,
+    //          nickName,
+    //          profileImage,
+    //          foodType,
+    //          foodStyle,
+    // shop : 
+    //   shopInfo - title,
+    //              mainImage,
+    //              foodCategory,
+    //              location,
+    //              aveRating,
+    //              menu,
+    //   uploadImage - foodImage,
+    //   friends : 
+    //     user - user id,
+    //            name,
+    //            nickName,
+    //            profileImage,
+    //     WriteBoard - comments,
+    //                 rating
+
+    // ! nickName으로 검색된 유저 정보 가져오기
+    // 1. query와 일치하는 nickName을 가진 user 정보를 가져온다.
+    
+      // 1) nickName이 query와 일치하는 경우
+    // const nickNameUserData = await this.usersRepository.find({nickname: query})
+
+      // 2) nickName이 query가 포함된 경우
+    let isUserData = true;
+    let isShopData = true;
+
+    const nickNameUserData = await this.usersRepository.find({nickname: Like(`%${query}%`)})
+
+    if(nickNameUserData.length === 0) isUserData = false;
+
+
+    // const nickNameUserData2 = await this.usersRepository.find({nickname: ILike(`%${query}%`)})
+    
+      // 3) nickName이 query로 시작하는 경우
+    // const nickNameUserData = await this.usersRepository.find({nickname: Like(`%${query}`)})
+
+    // 2. 검색된 user의 comment 개수를 체크해서 완성된 데이터에 포함시켜준다.
+    const idList = nickNameUserData.map((el) => el.id)
+    const countList = [];
+
+    for(let searchedId of idList) {
+      const countData = await this.writeBoardRepository.count({user_id: searchedId})
+      countList.push(countData)
+    }
+
+    const nickNameUserList = nickNameUserData.map((user, idx) => {
+      return {
+        userId : user.id,
+        name : user.name,
+        nickName : user.nickname,
+        profileImg : user.profileImage,
+        foodType : user.foodType,
+        foodStyle : user.foodStyle,
+        commentCount : countList[idx]
+      }
+    })
+
+    // ! shop정보 및 관련된 friends 정보 가져오기
+    // 1. query가 포힘된 shop title의 shop과 관련된 정보를 가져온다.
+    const allData = await this.shopInfoRepository
+      .createQueryBuilder('shopInfo')
+      .select([
+        'shopInfo.title',
+        'shopInfo.mainImage',
+        'shopInfo.foodCategory',
+        'shopInfo.location',
+        'img.foodImage',
+        'shopInfo.aveRating',
+        'shopInfo.menu',
+        'user.id',
+        'user.name',
+        'user.nickName',
+        'user.profileImage',
+        'writeBoard.rating',
+        'writeBoard.comments',
+        'hashtag.tag',
+      ])
+      .leftJoin('shopInfo.writeBoard', 'writeBoard')
+      .leftJoin('shopInfo.img', 'img')
+      .leftJoin('writeBoard.hashtag', 'hashtag')
+      .leftJoin('writeBoard.user', 'user')
+      .where(`shopInfo.title LIKE :title`, { title: `%${query}%` })
+      .getMany();
+
+      if(allData.length === 0) isShopData = false;
+
+      // 2.1. shop관련 정보를 API에 맞게 변경한다.
+      // 2.2. user의 id를 기반으로 친구 정보를 가져와서 친구가 작성한 게시물만 저장한다.
+    const friendsListData = await this.friendListRepository.find({
+      user_id: id,
+    });
+    const friendList = friendsListData.map((el) => el.friend);
+    console.log(friendList)
+
+    const shopInfoList = allData.map((el) => {
+      const filteredWB = el.writeBoard.filter((wbEl, idx) => {
+        console.log(wbEl.user.id)
+        return friendList.includes(wbEl.user.id)
+      })
+      return {
+        title: el.title,
+        mainImg: el.mainImage,
+        foodCategory: el.foodCategory,
+        location: el.location,
+        relatedImg: el.img.map((imgEl) => imgEl.foodImage),
+        aveRating: el.aveRating,
+        menu: el.menu,
+        friends: filteredWB.map((fWBEl) => {
+          return {
+            userId: fWBEl.user.id,
+            name: fWBEl.user.name,
+            nickName: fWBEl.user.nickname,
+            profileImg: fWBEl.user.profileImage,
+            rating: fWBEl.rating,
+            comments: fWBEl.comments,
+            hashtag: fWBEl.hashtag.map((hashtagEl) => hashtagEl.tag)
+          }
+        })
+      }
+    })
+
+    //! userData와 shopData가 모두 없을 경우
+    if(!isUserData && !isShopData) return new HttpException(`No Matching Results`, 404)
+
+    return {data: {user: nickNameUserList, shopInfo: shopInfoList}, status:200, isUserData, isShopData};
   }
 
-  findOne(id: number) {
+  findFriend(id: number, query: string) {
+    // 이름/닉네임/연락처로 친구만 검색
     return `This action returns a #${id} search`;
   }
 

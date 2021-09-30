@@ -31,10 +31,10 @@ export class Upload_Image {
   updated_at: Date;
 
   @ManyToOne(() => Write_Board)
-  @JoinColumn({ name: 'write_board_id' })
-  writeBoard: Write_Board[];
+  @JoinColumn({ name: 'write_board_id', referencedColumnName: 'id' })
+  writeBoard: Write_Board;
 
   @ManyToOne(() => Shop_Info)
-  @JoinColumn({ name: 'house_info_id' })
+  @JoinColumn({ name: 'house_info_id', referencedColumnName: 'id' })
   shopInfo: Shop_Info;
 }

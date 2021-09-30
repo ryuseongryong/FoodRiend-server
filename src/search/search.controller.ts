@@ -22,10 +22,12 @@ export class SearchController {
   }
 
   @Get('result/:id')
-  findAll(@Param('id') id: string, @Query('search_query') query: string) {}
+  findResult(@Param('id') id: number, @Query('search_query') query: string) {
+    return this.searchService.findResult(id, query);
+  }
 
   @Get('friend/:id')
-  findOne(@Param('id') id: string, @Query() query: string) {}
+  findFriend(@Param('id') id: number, @Query('search_query') query: string) {}
 
   @Patch('bookmark/:type/:id')
   update(@Param('id') id: string) {}

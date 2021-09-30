@@ -5,7 +5,7 @@ import Faker from 'faker';
 
 export default class CreateUsers implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<void> {
-    await factory(Users)().createMany(10);
+    await factory(Users)().createMany(11);
   }
 }
 

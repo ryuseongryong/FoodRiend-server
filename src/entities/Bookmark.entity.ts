@@ -28,10 +28,10 @@ export class Bookmark {
   updated_at: Date;
 
   @ManyToOne(() => Users)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user!: Users;
 
   @ManyToOne(() => Shop_Info)
-  @JoinColumn({ name: 'house_info_id' })
+  @JoinColumn({ name: 'house_info_id', referencedColumnName: 'id' })
   shopInfo!: Shop_Info;
 }
