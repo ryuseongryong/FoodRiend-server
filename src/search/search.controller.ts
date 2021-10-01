@@ -27,7 +27,9 @@ export class SearchController {
   }
 
   @Get('friend/:id')
-  findFriend(@Param('id') id: number, @Query('search_query') query: string) {}
+  findFriend(@Param('id') id: number, @Query('search_query') query: string) {
+    return this.searchService.findFriend(id, query);
+  }
 
   @Patch('bookmark/:type/:id')
   update(@Param('id') id: string) {}

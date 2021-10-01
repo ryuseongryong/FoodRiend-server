@@ -18,6 +18,11 @@ export class BoardService {
   @InjectRepository(Upload_Image)
   private readonly uploadImageRepository: Repository<Upload_Image>;
 
+// 같은 이름일 때, 친구가 있어서 저장된 것 + 나머지 + 위치 우선순위
+// google api 에서 가게 정보 받아와서
+// DB 확인후
+// 없으면 저장
+
   async create(id: number, dto: CreateBoardDto) {
     const existTitle = await this.shopInfoRepository.find({
       id: dto.shopId,
