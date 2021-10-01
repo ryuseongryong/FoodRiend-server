@@ -11,7 +11,7 @@ import { Hashtag } from '../entities/Hashtag.entity';
 import { Upload_Image } from '../entities/Upload_Image.entity';
 import { NotFoundError } from 'rxjs';
 import { Shop_Info } from '../entities/Shop_Info.entity';
-import { Client, Language } from '@googlemaps/google-maps-services-js'
+import { Client, Language, PlaceType1, AddressType } from '@googlemaps/google-maps-services-js'
 const qs = require('query-string')
 
 @Injectable()
@@ -132,11 +132,11 @@ export class SearchService {
       timeout: 1000
     })
     
-    const shopNameList = [];
+    // shopNameList에 포함된 title 중 DB title이 일치하는 경우
+    // shopInfoGoogleAPI에서 제외시켜야함.
     const textSearchShopInfoGoogleAPI = textSearch.data.results;
     const shopInfoGoogleAPI = textSearchShopInfoGoogleAPI.map((result) => {
-      shopNameList.push(result.name)
-      let pt = result.photos
+      console.log(result.name, result.types.includes('food' as AddressType))
       if(result.photos === undefined) {
         result.photos = [{photo_reference: null, height: 640, width: 400, html_attributions:[]}]
       }
@@ -148,11 +148,13 @@ export class SearchService {
         location: result.formatted_address,
         relatedImg: result.photos,
         aveRating: result.rating,
+        priceLevel: result.price_level,
         menu: null,
         friends: null
       }
     })
     console.log(shopInfoGoogleAPI)
+
     
 //? 전화번호 등 정보를 가져오기 위해서 Detail 필요, 없는 정보는 알아서 제외됨
     // const placeIdList = []
@@ -282,7 +284,10 @@ export class SearchService {
     });
     const friendList = friendsListData.map((el) => el.friend);
 
+    const DBshopNameList = [];
+
     const shopInfoList = allData.map((el) => {
+      DBshopNameList.push(el.title)
       const filteredWB = el.writeBoard.filter((wbEl, idx) => {
         return friendList.includes(wbEl.user.id)
       })
@@ -309,7 +314,14 @@ export class SearchService {
       }
     })
 
-    const shopInfo = [...shopInfoList, ...shopInfoGoogleAPI]
+
+    // DB에 저장이 되어있지 않고, 가게 종류가 food type인 것만 포함
+    const conflictAndFoodCheckShopInfoGoogleAPI = shopInfoGoogleAPI.filter((el) => {
+      return !(DBshopNameList.includes(el.title)) && el.foodCategory.includes('food' as AddressType)
+      
+    })
+
+    const shopInfo = [...shopInfoList, ...conflictAndFoodCheckShopInfoGoogleAPI]
 
     //! userData와 shopData가 모두 없을 경우
     if(!isUserData && !isShopData) return new HttpException(`No Matching Results`, 404)
@@ -317,9 +329,12 @@ export class SearchService {
     return {data: {user: nickNameUserList, shopInfo: shopInfo}, status:200, isUserData, isShopData};
   }
 
-  findFriend(id: number, query: string) {
+  async findFriend(id: number, query: string) {
     // 이름/닉네임/연락처로 친구만 검색
-    return `This action returns a #${id} search`;
+    const friendsListData = await this.friendListRepository.find({
+      user_id: id,
+    });
+    const friendList = friendsListData.map((el) => el.friend);    return `This action returns a #${id} search`;
   }
 
   update(id: number, updateSearchDto: UpdateSearchDto) {
