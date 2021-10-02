@@ -23,7 +23,9 @@ export class Shop_Info {
   @Column()
   foodCategory: string;
 
-  @Column()
+  @Column({
+    nullable: true
+  })
   menu: string;
 
   @Column()
