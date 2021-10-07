@@ -13,25 +13,31 @@ export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ unique: true })
+  email: string;
+
   @Column()
+  loginType: string;
+
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   nickname: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
-  @Column()
+  @Column({ nullable: true })
   profileImage: string;
 
-  @Column()
+  @Column({ nullable: true })
   phoneNumber: string;
 
-  @Column()
+  @Column({ nullable: true })
   foodType: string;
 
-  @Column()
+  @Column({ nullable: true })
   foodStyle: string;
 
   @Column({ default: false })

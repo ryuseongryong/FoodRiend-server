@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -14,6 +14,9 @@ import { Friend_List } from './entities/Friend_List.entity';
 import { Hashtag } from './entities/Hashtag.entity';
 import { Shop_Info } from './entities/Shop_Info.entity';
 import { Upload_Image } from './entities/Upload_Image.entity';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { logger } from './auth/logger.middleware';
 
 @Module({
   controllers: [AppController],
@@ -23,6 +26,7 @@ import { Upload_Image } from './entities/Upload_Image.entity';
     SearchModule,
     BoardModule,
     FriendModule,
+    AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       synchronize: false, //true : 테이블 생성 후 싱크 맞춰추기 // false : 작동안함
@@ -41,8 +45,12 @@ import { Upload_Image } from './entities/Upload_Image.entity';
         Shop_Info,
         Friend_List,
       ],
-      
     }),
   ],
 })
 export class AppModule {}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer.apply(logger).forRoutes('*');
+//   }
+// }
