@@ -23,24 +23,24 @@ export class AppController {
     private usersService: UsersService,
   ) {}
 
-  @UseGuards(AuthGuard('local'))
-  @Post('login')
-  async login(@Request() req) {
-    return this.authService.login(req.user);
-  }
+  // @UseGuards(AuthGuard('local'))
+  // @Post('login')
+  // async login(@Request() req) {
+  //   return this.authService.login(req.user);
+  // }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get('profile')
+  // getProfile(@Request() req) {
+  //   return req.user;
+  // }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('signup')
-  signup(@Request() req, @Body() body: CreateUserDto) {
-    console.log(req.user, body);
-    return this.usersService.createUserInfo(req.user.userId, body);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('signup')
+  // signup(@Request() req, @Body() body: CreateUserDto) {
+  //   console.log(req.user, body);
+  //   return this.usersService.createUserInfo(req.user.userId, body);
+  // }
 
   @Get()
   getHello(): string {

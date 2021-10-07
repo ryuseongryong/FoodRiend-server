@@ -1,5 +1,6 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -14,13 +15,13 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('kakao')
-  login(@Request() req) {
-    return this.authService.login(req.user);
+  login(@Req() req, @Res() res: Response) {
+    return this.authService.login(req.user, res);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('createInfo')
-  createUserInfo(@Request() req, @Body() body: CreateUserDto) {
+  createUserInfo(@Req() req, @Body() body: CreateUserDto) {
     return this.usersService.createUserInfo(req.user.userId, body);
   }
 }
