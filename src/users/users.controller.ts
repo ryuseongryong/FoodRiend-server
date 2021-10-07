@@ -9,14 +9,11 @@ import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('verify/:type')
-  create(@Body() dto: CreateUserDto) {
-    // this.usersService.create(dto);
-  }
-  // @Get('verify/token')
-  // @UseGuards(AuthGuard('bearer'))
-  // findAll() {
-  //   return [];
+  // kakao email, loginType을 받으면 DB에 저장하고
+  // 이후에 Local 정보를 입력받으면 patch로 연결하여 프로필 정보를 수정한다.
+  // @Post('verify/:type')
+  // create(@Body() dto: CreateUserDto) {
+  //   this.usersService.createUserInfo(dto);
   // }
 
   @Get('profile/:id')

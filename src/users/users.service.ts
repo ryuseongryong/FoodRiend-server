@@ -1,7 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { ConsoleLogger, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PatchUserDto } from './dto/create-user.dto';
+import { CreateUserDto, PatchUserDto } from './dto/create-user.dto';
 import { Users } from '../entities/Users.entity';
 import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
@@ -21,10 +21,59 @@ export class UsersService {
   @InjectRepository(Hashtag)
   private readonly hashtagRepository: Repository<Hashtag>;
 
+  async findOne(email: string): Promise<Users | undefined> {
+    const user = await this.usersRepository.findOne({ email: email });
+    return user;
+  }
+
+  async createEmail(email: string, loginType: string) {
+    const user = await this.usersRepository.save({
+      email: email,
+      loginType: loginType,
+    });
+    return user;
+  }
+
+  async createUserInfo(id: number, body: CreateUserDto) {
+    const user = await this.usersRepository.findOne({ id: id });
+
+    if (Object.keys(body).length === 0) {
+      return new HttpException('Does empty request', 403);
+    }
+
+    for (const key in body) {
+      console.log(key, user[key], body[key]);
+      user[key] = body[key];
+    }
+
+    const createUser = await this.usersRepository.save(user);
+
+    return {
+      data: {
+        name: createUser.name,
+        nickname: createUser.nickname,
+        profileImage: createUser.profileImage,
+        foodType: createUser.foodType,
+        foodStyle: createUser.foodStyle,
+      },
+      status: 200,
+    };
+  }
+
   async getUserInfo(id: number) {
     const user = await this.usersRepository.findOne(
       { id: id },
-      { select: ['name', 'nickname', 'profileImage', 'foodStyle', 'foodType'] },
+      {
+        select: [
+          'email',
+          'loginType',
+          'name',
+          'nickname',
+          'profileImage',
+          'foodStyle',
+          'foodType',
+        ],
+      },
     );
 
     const cntFriend = await this.friendListRepository.count({

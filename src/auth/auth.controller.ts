@@ -1,43 +1,27 @@
-// import {
-//   Controller,
-//   Get,
-//   Post,
-//   Body,
-//   Patch,
-//   Param,
-//   Delete,
-//   Injectable,
-//   UseGuards
-// } from '@nestjs/common';
-// import { UsersService } from './users.service';
-// import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
-// import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersService } from '../users/users.service';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
-// @Injectable()
-// @Controller('api/users')
-// export class UsersController {
-//   constructor(private readonly usersService: UsersService) {}
+@Controller('api/auth')
+export class AuthController {
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
-//   @Post('verify/:type')
-//   create(@Body() dto: CreateUserDto) {
-//     this.usersService.create(dto);
-//   }
+  @UseGuards(AuthGuard('local'))
+  @Post('kakao')
+  login(@Req() req, @Res() res: Response) {
+    return this.authService.login(req.user, res);
+  }
 
-//   @Get('verify/token')
-//   @UseGuards(AuthGuard('bearer'))
-//   findAll() {
-//     return [];
-//   }
-// }
-
-// @Controller('api/user')
-// export class AuthController {
-//   constructor(private authService: AuthService) {}
-
-//   @UseGuards(JwtAuthGuard)
-//   @Get('verify/token')
-//   getProfile(@Req() req) {
-//     return req.user;
-//   }
-// }
+  @UseGuards(JwtAuthGuard)
+  @Post('createInfo')
+  createUserInfo(@Req() req, @Body() body: CreateUserDto) {
+    return this.usersService.createUserInfo(req.user.userId, body);
+  }
+}
