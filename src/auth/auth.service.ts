@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { isEmail } from 'class-validator';
+import { Response } from 'express';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -27,7 +28,7 @@ export class AuthService {
   }
 
   // 문제점, 첫 번째 로그인 시도시(email 미등록) 정보가 등록이 안됨
-  async login(user: any, res: any) {
+  async login(user: any, res: Response) {
     const payload = { id: user.id, email: user.email };
     // cookie에 담을 필요가 있음
     const accessToken = this.jwtService.sign(payload);
@@ -36,11 +37,18 @@ export class AuthService {
       // ms * sec * min * hour * day
       maxAge: 1000 * 60 * 60 * 1 * 1,
       secure: true,
-      sameSite: 'None',
+      sameSite: 'none',
     });
     return res.status(201).json({
       userId: user.id,
       // access_token: accessToken,
+    });
+  }
+
+  async logout(user: any, res: any) {
+    res.cookie('access_token', 'expired!', {});
+    return res.status(200).json({
+      message: '로그아웃이 완료되었습니다.',
     });
   }
 }

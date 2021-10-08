@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm/index';
 import { Users } from './Users.entity';
 
 @Entity()
+@Unique('user and friend', ['user_id', 'friend'])
 export class Friend_List {
   @PrimaryGeneratedColumn()
   id: number;

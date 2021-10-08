@@ -140,7 +140,7 @@ export class SearchService {
     // shopInfoGoogleAPI에서 제외시켜야함.
     const textSearchShopInfoGoogleAPI = textSearch.data.results;
     const shopInfoGoogleAPI = textSearchShopInfoGoogleAPI.map((result) => {
-      console.log(result.name, result.types.includes('food' as AddressType));
+      // console.log(result.name, result.types.includes('food' as AddressType));
       if (result.photos === undefined) {
         result.photos = [
           {
@@ -164,7 +164,7 @@ export class SearchService {
         friends: null,
       };
     });
-    console.log(shopInfoGoogleAPI);
+    // console.log(shopInfoGoogleAPI);
 
     //? 전화번호 등 정보를 가져오기 위해서 Detail 필요, 없는 정보는 알아서 제외됨
     // const placeIdList = []
