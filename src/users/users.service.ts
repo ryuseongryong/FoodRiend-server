@@ -21,14 +21,14 @@ export class UsersService {
   @InjectRepository(Hashtag)
   private readonly hashtagRepository: Repository<Hashtag>;
 
-  async findOne(email: string): Promise<Users | undefined> {
-    const user = await this.usersRepository.findOne({ email: email });
+  async findOne(kakaoId: bigint): Promise<Users | undefined> {
+    const user = await this.usersRepository.findOne({ kakaoId: kakaoId });
     return user;
   }
 
-  async createEmail(email: string, loginType: string) {
+  async createKakaoId(kakaoId: bigint, loginType: string) {
     const user = await this.usersRepository.save({
-      email: email,
+      kakaoId: kakaoId,
       loginType: loginType,
     });
     return user;
@@ -66,6 +66,7 @@ export class UsersService {
       {
         select: [
           'email',
+          'kakaoId',
           'loginType',
           'name',
           'nickname',

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { isEmail } from 'class-validator';
+import { isNumber } from 'class-validator';
 import { Response } from 'express';
 import { UsersService } from '../users/users.service';
 
@@ -13,23 +13,28 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  // email과 loginType으로 유저를 찾거나, 없으면 새로 생성
-  async validateUser(email: string, loginType: string): Promise<any> {
-    let user = await this.usersService.findOne(email);
+  // kakaoId과 loginType으로 유저를 찾거나, 없으면 새로 생성
+  async validateUser(kakaoId: bigint, loginType: string): Promise<any> {
+    let user = await this.usersService.findOne(kakaoId);
     if (user && user.loginType === loginType) {
       const { password, ...result } = user;
       return result;
-    } else if (!user && isEmail(email) && loginType === 'Kakao') {
-      user = await this.usersService.createEmail(email, loginType);
+    } else if (
+      !user &&
+      isNumber(kakaoId) &&
+      String(kakaoId).length === 10 &&
+      loginType === 'Kakao'
+    ) {
+      user = await this.usersService.createKakaoId(kakaoId, loginType);
       const { ...result } = user;
       return result;
     }
     return null;
   }
 
-  // 문제점, 첫 번째 로그인 시도시(email 미등록) 정보가 등록이 안됨
+  // 문제점, 첫 번째 로그인 시도시(kakaoId 미등록) 정보가 등록이 안됨
   async login(user: any, res: Response) {
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, kakaoId: user.kakaoId };
     // cookie에 담을 필요가 있음
     const accessToken = this.jwtService.sign(payload);
     res.cookie('access_token', accessToken, {
@@ -45,7 +50,7 @@ export class AuthService {
     });
   }
 
-  async logout(user: any, res: any) {
+  async logout(req: any, res: any) {
     res.cookie('access_token', 'expired!', {});
     return res.status(200).json({
       message: '로그아웃이 완료되었습니다.',
