@@ -13,7 +13,10 @@ export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'bigint', unique: true })
+  kakaoId: bigint;
+
+  @Column({ unique: true, nullable: true })
   email: string;
 
   @Column()
@@ -22,7 +25,7 @@ export class Users {
   @Column({ nullable: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ unique: true, nullable: true })
   nickname: string;
 
   @Column({ nullable: true })

@@ -28,6 +28,13 @@ define(Users, (faker: typeof Faker) => {
   ];
 
   user.loginType = 'Kakao';
+  user.kakaoId = BigInt(
+    Math.floor(Math.random() * 10 + 1) *
+      Math.floor(Math.random() * 10 + 1) *
+      Math.floor(Math.random() * 10 + 1) *
+      Math.floor(Math.random() * 10 + 1) *
+      Math.floor(Math.random() * 10 + 1),
+  );
   user.name = faker.name.findName();
   user.email = user.name + faker.internet.email();
   user.nickname = faker.address.city();

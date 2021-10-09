@@ -6,6 +6,9 @@ import { IsBoolean, IsEmail, IsNumber, IsString } from 'class-validator';
 export class CreateUserDto {
   // @IsEmail()
   @Expose()
+  readonly kakaoId: number;
+
+  @Expose()
   readonly email: string;
 
   // @IsString()

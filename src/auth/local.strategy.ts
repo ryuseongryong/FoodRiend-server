@@ -6,12 +6,12 @@ import { AuthService } from './auth.service';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    super({ usernameField: 'email', passwordField: 'loginType' });
+    super({ usernameField: 'kakaoId', passwordField: 'loginType' });
   }
 
-  // email과 loginType을 받아서 validateUser로 전달
-  async validate(email: string, loginType: string): Promise<any> {
-    const user = await this.authService.validateUser(email, loginType);
+  // kakaoId과 loginType을 받아서 validateUser로 전달
+  async validate(kakaoId: number, loginType: string): Promise<any> {
+    const user = await this.authService.validateUser(kakaoId, loginType);
     if (!user) {
       throw new UnauthorizedException();
     }

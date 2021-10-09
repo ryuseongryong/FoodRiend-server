@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -23,5 +31,11 @@ export class AuthController {
   @Post('createInfo')
   createUserInfo(@Req() req, @Body() body: CreateUserDto) {
     return this.usersService.createUserInfo(req.user.userId, body);
+  }
+
+  // @UseGuards(AuthGuard('local'))
+  @Get('logout')
+  logout(@Req() req, @Res() res: Response) {
+    return this.authService.logout(req, res);
   }
 }

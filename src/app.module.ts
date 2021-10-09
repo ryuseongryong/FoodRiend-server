@@ -31,6 +31,7 @@ import { logger } from './auth/logger.middleware';
     TypeOrmModule.forRoot({
       synchronize: false, //true : 테이블 생성 후 싱크 맞춰추기 // false : 작동안함
       type: 'mysql',
+      bigNumberStrings: false,
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,

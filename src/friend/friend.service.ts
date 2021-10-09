@@ -35,6 +35,7 @@ export class FriendService {
     const userList = userListData.map((user) => {
       return {
         id: user.id,
+        kakaoId: user.kakaoId,
         email: user.email,
         name: user.name,
         nickname: user.nickname,
@@ -112,6 +113,7 @@ export class FriendService {
     const userList = userListData.map((user) => {
       return {
         id: user.id,
+        kakaoId: user.kakaoId,
         email: user.email,
         name: user.name,
         nickname: user.nickname,
