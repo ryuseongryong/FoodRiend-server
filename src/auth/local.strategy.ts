@@ -10,7 +10,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   // kakaoId과 loginType을 받아서 validateUser로 전달
-  async validate(kakaoId: number, loginType: string): Promise<any> {
+  async validate(kakaoId: bigint, loginType: string): Promise<any> {
     const user = await this.authService.validateUser(kakaoId, loginType);
     if (!user) {
       throw new UnauthorizedException();
