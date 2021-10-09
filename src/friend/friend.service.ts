@@ -16,6 +16,7 @@ export class FriendService {
     @InjectRepository(Friend_List)
     private readonly friendListRepository: Repository<Friend_List>,
   ) {}
+  //!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   async findAll(userArray: FindFriendDto) {
     const phoneNumberList = userArray['phoneNumberList'];
     let isData = true;
@@ -46,6 +47,7 @@ export class FriendService {
     return { data: userList, status: 200, isData: isData };
   }
 
+  //!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   async addFriend(id: number, idArray: AddFriendDto) {
     const idList = idArray['idList'];
     let isData = true;
@@ -55,30 +57,57 @@ export class FriendService {
     });
     // 친구등록하는 로직 구현
 
+    // if (userListData.length === 0) {
+    //   isData = false;
+    //   return { data: null, status: 200, isData: isData };
+    // }
+
     const addFriendObjArr = idList.map((friend) => {
       return { user_id: id, friend };
     });
 
-    const insert = await this.friendListRepository
+    const addFriendQuery = await this.friendListRepository
       .createQueryBuilder('friend')
       .insert()
       .into(Friend_List)
-      .values(addFriendObjArr)
-      .execute();
+      .values(addFriendObjArr);
 
-    console.log(
-      'idList@@',
-      idList,
-      '\naddFriendObjArr',
-      addFriendObjArr,
-      '\ninsert@@',
-      insert,
+    const [originSql, params] = addFriendQuery.getQueryAndParameters();
+
+    const insertIgnoreSql = originSql.replace(
+      'INSERT INTO',
+      'INSERT IGNORE INTO',
     );
 
-    if (userListData.length === 0) {
-      isData = false;
-      return { data: null, status: 200, isData: isData };
-    }
+    await this.friendListRepository.manager.query(insertIgnoreSql, params);
+
+    //?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    //? 반대의 경우도 친구추가해주기
+    const addOppositeFriendObjArr = idList.map((friend) => {
+      return { user_id: friend, friend: id };
+    });
+
+    const addOppositeFriendQuery = await this.friendListRepository
+      .createQueryBuilder('friend')
+      .insert()
+      .into(Friend_List)
+      .values(addOppositeFriendObjArr);
+
+    const [oppositeOriginSql, oppositeParams] =
+      addOppositeFriendQuery.getQueryAndParameters();
+
+    const insertIgnoreOppositeSql = oppositeOriginSql.replace(
+      'INSERT INTO',
+      'INSERT IGNORE INTO',
+    );
+
+    await this.friendListRepository.manager.query(
+      insertIgnoreOppositeSql,
+      oppositeParams,
+    );
+
+    // 추가적으로 친구 추천 -> 친구 신청 -> 상대방에서 친구 수락 했을 때 동작해야함
+    // 친구 목록 -> 친구 해제 -> 삭제
 
     const userList = userListData.map((user) => {
       return {
