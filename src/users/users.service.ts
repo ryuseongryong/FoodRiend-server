@@ -36,11 +36,17 @@ export class UsersService {
 
   async createUserInfo(id: number, body: CreateUserDto) {
     const user = await this.usersRepository.findOne({ id: id });
+    const nicknameConfilctCheck = await this.usersRepository.findOne({
+      nickname: body.nickname,
+    });
 
     if (Object.keys(body).length === 0) {
       return new HttpException('Does empty request', 403);
     }
 
+    if (nicknameConfilctCheck !== undefined) {
+      return new HttpException('nickname conflict!', 409);
+    }
     for (const key in body) {
       console.log(key, user[key], body[key]);
       user[key] = body[key];
