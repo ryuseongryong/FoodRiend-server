@@ -86,13 +86,14 @@ export class BoardService {
     const averageRating = numberator / denominator;
 
     await this.shopInfoRepository.update(
-      { id: dto.shopId },
+      { id: chosenShopId },
       { aveRating: averageRating },
     );
 
     return {
       data: {
-        aveRating: averageRating,
+        // 평점을 소수점 첫번째 자리 까지만 나타내기
+        aveRating: Math.round(averageRating * 10) / 10,
         feed: {
           feedId: writeBoard.id,
           title: dto.title,
