@@ -1,12 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import { IsArray, IsNumber, IsString } from 'class-validator';
 
+Exclude();
 export class CreateBoardDto {
-  @IsNumber()
+  @Expose()
+  readonly mainImage: string;
+
+  @Expose()
+  readonly foodCategory: string;
+
+  @Expose()
+  readonly menu: string;
+
+  @Expose()
+  readonly contact: string;
+
+  @Expose()
+  readonly title: string;
+
+  @Expose()
+  readonly location: string;
+
+  @Expose()
   @ApiProperty()
   readonly shopId: number;
 
-  @IsArray()
+  @Expose()
   @ApiProperty({ description: '이미지' })
   readonly img: string[];
 
@@ -14,19 +34,11 @@ export class CreateBoardDto {
   @ApiProperty()
   readonly rating: number;
 
-  @IsString()
+  @Expose()
   @ApiProperty()
-  readonly comments: string;
+  readonly reviews: string;
 
-  @IsArray()
+  @Expose()
   @ApiProperty()
   readonly hashtag: string[];
-
-  @IsString()
-  @ApiProperty()
-  readonly title: string;
-
-  @IsString()
-  @ApiProperty()
-  readonly location: string;
 }

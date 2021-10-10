@@ -18,18 +18,29 @@ export class BoardService {
   @InjectRepository(Upload_Image)
   private readonly uploadImageRepository: Repository<Upload_Image>;
 
-// 같은 이름일 때, 친구가 있어서 저장된 것 + 나머지 + 위치 우선순위
-// google api 에서 가게 정보 받아와서
-// DB 확인후
-// 없으면 저장
+  // 같은 이름일 때, 친구가 있어서 저장된 것 + 나머지 + 위치 우선순위
+  // google api 에서 가게 정보 받아와서
+  // DB 확인후
+  // 없으면 저장
 
   async create(id: number, dto: CreateBoardDto) {
     const existTitle = await this.shopInfoRepository.find({
-      id: dto.shopId,
+      where: [{ id: dto.shopId }, { title: dto.title }],
     });
 
+    let chosenShopId = existTitle[0].id;
+    // shopInfo에 정보가 없는 경우, 입력하고 id값을 shopId로 사용하기
     if (existTitle.length === 0) {
-      throw new HttpException('Not found shop', 401);
+      const newShopInfo = await this.shopInfoRepository.save({
+        mainImage: dto.mainImage,
+        foodCategory: dto.foodCategory,
+        menu: dto.menu,
+        contact: dto.contact,
+        title: dto.title,
+        location: dto.location,
+      });
+      chosenShopId = newShopInfo.id;
+      console.log('newShopInfo: ', newShopInfo);
     }
 
     const writeBoard = await this.boardRepository.save({
@@ -37,8 +48,8 @@ export class BoardService {
       rating: dto.rating,
       best: false,
       isDeleted: false,
-      house_info_id: existTitle[0].id,
-      comments: dto.comments,
+      house_info_id: chosenShopId,
+      reviews: dto.reviews,
     });
 
     for (let i = 0; i < dto.hashtag.length; i++) {
@@ -52,12 +63,37 @@ export class BoardService {
       await this.uploadImageRepository.save({
         foodImage: dto.img[i],
         write_board_id: writeBoard.id,
-        house_info_id: existTitle[0].id,
+        house_info_id: chosenShopId,
       });
     }
 
+    // aveRating 계산해서 설정하기
+    // 평균값 = 평점의 합 / 해당 shopInfo로 등록한 writeBoard의 수
+
+    const allWriteBoardData = await this.boardRepository.findAndCount({
+      house_info_id: chosenShopId,
+    });
+
+    // find를 먼저 하고, 마지막에 count값을 배열로 가져옴
+
+    // 분모와 분자값을 설정하여 평균값 계산하기
+    const numberator: number = allWriteBoardData[0].reduce(
+      (acc, cur) => acc + cur.rating,
+      0,
+    );
+    const denominator: number = allWriteBoardData[1];
+
+    const averageRating = numberator / denominator;
+
+    await this.shopInfoRepository.update(
+      { id: chosenShopId },
+      { aveRating: averageRating },
+    );
+
     return {
       data: {
+        // 평점을 소수점 첫번째 자리 까지만 나타내기
+        aveRating: Math.round(averageRating * 10) / 10,
         feed: {
           feedId: writeBoard.id,
           title: dto.title,
@@ -65,7 +101,7 @@ export class BoardService {
           location: dto.location,
           img: dto.img,
           rating: dto.rating,
-          comments: dto.comments,
+          reviews: dto.reviews,
         },
         status: 200,
       },

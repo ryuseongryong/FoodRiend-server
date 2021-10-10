@@ -10,7 +10,7 @@ define(Write_Board, (faker: typeof Faker) => {
   writeBoard.house_info_id = Math.floor(Math.random() * 10) + 1;
   writeBoard.rating = Math.floor(Math.random() * 5);
   // writeBoard.best = Boolean(Math.round(Math.random()))
-  writeBoard.comments = faker.lorem.sentence();
+  writeBoard.reviews = faker.lorem.sentence();
 
   return writeBoard;
 });

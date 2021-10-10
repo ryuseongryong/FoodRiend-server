@@ -120,7 +120,7 @@ export class UsersService {
         'img.foodImage',
         'writeBoard.id',
         'writeBoard.rating',
-        'writeBoard.comments',
+        'writeBoard.reviews',
         'hashtag.tag',
         'shopInfo.title',
         'shopInfo.location',
