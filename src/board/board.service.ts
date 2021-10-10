@@ -18,10 +18,10 @@ export class BoardService {
   @InjectRepository(Upload_Image)
   private readonly uploadImageRepository: Repository<Upload_Image>;
 
-// 같은 이름일 때, 친구가 있어서 저장된 것 + 나머지 + 위치 우선순위
-// google api 에서 가게 정보 받아와서
-// DB 확인후
-// 없으면 저장
+  // 같은 이름일 때, 친구가 있어서 저장된 것 + 나머지 + 위치 우선순위
+  // google api 에서 가게 정보 받아와서
+  // DB 확인후
+  // 없으면 저장
 
   async create(id: number, dto: CreateBoardDto) {
     const existTitle = await this.shopInfoRepository.find({
@@ -56,8 +56,32 @@ export class BoardService {
       });
     }
 
+    // aveRating 계산해서 설정하기
+    // 평균값 = 평점의 합 / 해당 shopInfo로 등록한 writeBoard의 수
+
+    const allWriteBoardData = await this.boardRepository.findAndCount({
+      house_info_id: dto.shopId,
+    });
+
+    // find를 먼저 하고, 마지막에 count값을 배열로 가져옴
+
+    // 분모와 분자값을 설정하여 평균값 계산하기
+    const numberator: number = allWriteBoardData[0].reduce(
+      (acc, cur) => acc + cur.rating,
+      0,
+    );
+    const denominator: number = allWriteBoardData[1];
+
+    const averageRating = numberator / denominator;
+
+    await this.shopInfoRepository.update(
+      { id: dto.shopId },
+      { aveRating: averageRating },
+    );
+
     return {
       data: {
+        aveRating: averageRating,
         feed: {
           feedId: writeBoard.id,
           title: dto.title,
