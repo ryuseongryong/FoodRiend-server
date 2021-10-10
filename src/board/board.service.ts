@@ -25,11 +25,22 @@ export class BoardService {
 
   async create(id: number, dto: CreateBoardDto) {
     const existTitle = await this.shopInfoRepository.find({
-      id: dto.shopId,
+      where: [{ id: dto.shopId }, { title: dto.title }],
     });
 
+    let chosenShopId = existTitle[0].id;
+    // shopInfo에 정보가 없는 경우, 입력하고 id값을 shopId로 사용하기
     if (existTitle.length === 0) {
-      throw new HttpException('Not found shop', 401);
+      const newShopInfo = await this.shopInfoRepository.save({
+        mainImage: dto.mainImage,
+        foodCategory: dto.foodCategory,
+        menu: dto.menu,
+        contact: dto.contact,
+        title: dto.title,
+        location: dto.location,
+      });
+      chosenShopId = newShopInfo.id;
+      console.log('newShopInfo: ', newShopInfo);
     }
 
     const writeBoard = await this.boardRepository.save({
@@ -37,7 +48,7 @@ export class BoardService {
       rating: dto.rating,
       best: false,
       isDeleted: false,
-      house_info_id: existTitle[0].id,
+      house_info_id: chosenShopId,
       reviews: dto.reviews,
     });
 
@@ -52,7 +63,7 @@ export class BoardService {
       await this.uploadImageRepository.save({
         foodImage: dto.img[i],
         write_board_id: writeBoard.id,
-        house_info_id: existTitle[0].id,
+        house_info_id: chosenShopId,
       });
     }
 
@@ -60,7 +71,7 @@ export class BoardService {
     // 평균값 = 평점의 합 / 해당 shopInfo로 등록한 writeBoard의 수
 
     const allWriteBoardData = await this.boardRepository.findAndCount({
-      house_info_id: dto.shopId,
+      house_info_id: chosenShopId,
     });
 
     // find를 먼저 하고, 마지막에 count값을 배열로 가져옴

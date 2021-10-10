@@ -24,17 +24,17 @@ export class Shop_Info {
   foodCategory: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
   menu: string;
 
-  @Column()
+  @Column({ default: 0 })
   aveRating: number;
 
-  @Column()
+  @Column({ nullable: true })
   contact: string;
 
-  @Column()
+  @Column({ unique: true })
   title: string;
 
   @Column()
