@@ -25,6 +25,11 @@ export class FriendController {
     return this.friendService.addFriend(id, body);
   }
 
+  @Get('list/:id')
+  getList(@Param('id') id: number) {
+    return this.friendService.getList(id);
+  }
+
   @Delete('delete/:id')
   remove(@Param('id') id: string) {}
 }

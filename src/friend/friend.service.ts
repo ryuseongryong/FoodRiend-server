@@ -125,6 +125,37 @@ export class FriendService {
     return { data: userList, status: 200, isData: isData };
   }
 
+  async getList(id: number) {
+    let isData = true;
+    const friendListData = await this.friendListRepository.find({
+      user_id: id,
+    });
+    if (friendListData.length === 0) {
+      isData = false;
+      return {
+        data: null,
+        status: 200,
+        isData: isData,
+      };
+    }
+
+    const friendList = friendListData.map((el) => el.friend);
+
+    const friendUserData = await this.usersRepository.find({
+      id: In(friendList),
+    });
+
+    const friendUser = friendUserData.map((user) => {
+      return {
+        name: user.name,
+        nickname: user.nickname,
+        profileImg: user.profileImage,
+      };
+    });
+
+    return { data: friendUser, status: 200, isData: isData };
+  }
+
   update(id: number, updateFriendDto: UpdateFriendDto) {
     return `This action updates a #${id} friend`;
   }
