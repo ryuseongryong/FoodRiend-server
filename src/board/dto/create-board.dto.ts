@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import { IsArray, IsNumber, IsString } from 'class-validator';
 
+Exclude();
 export class CreateBoardDto {
   @IsNumber()
   @ApiProperty()
@@ -14,9 +16,9 @@ export class CreateBoardDto {
   @ApiProperty()
   readonly rating: number;
 
-  @IsString()
+  @Expose()
   @ApiProperty()
-  readonly comments: string;
+  readonly reviews: string;
 
   @IsArray()
   @ApiProperty()

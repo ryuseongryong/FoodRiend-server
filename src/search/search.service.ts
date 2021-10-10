@@ -54,7 +54,7 @@ export class SearchService {
     // shopInfo - location,
     //            title,
     // Hashtag - tag,
-    // WriteBoard - comments,
+    // WriteBoard - reviews,
     //              rating,
     //              created_at
     const userData = await this.usersRepository.find({ id: id });
@@ -89,7 +89,7 @@ export class SearchService {
         // upload_Image - foodImage
         'img.foodImage',
         // 'writeBoard.rating',
-        'writeBoard.comments',
+        'writeBoard.reviews',
         'hashtag.tag',
         'writeBoard.created_at',
       ])
@@ -110,7 +110,7 @@ export class SearchService {
         hashtag: el.hashtag.map((hashtagEl) => hashtagEl.tag),
         location: el.shopInfo.location,
         title: el.shopInfo.title,
-        comments: el.comments,
+        reviews: el.reviews,
         aveRating: el.shopInfo.aveRating,
         created_at: el.created_at,
       };
@@ -216,7 +216,7 @@ export class SearchService {
     //            name,
     //            nickName,
     //            profileImage,
-    //     WriteBoard - comments,
+    //     WriteBoard - reviews,
     //                 rating
 
     // ! nickName으로 검색된 유저 정보 가져오기
@@ -238,16 +238,26 @@ export class SearchService {
     // 3) nickName이 query로 시작하는 경우
     // const nickNameUserData = await this.usersRepository.find({nickname: Like(`%${query}`)})
 
-    // 2. 검색된 user의 comment 개수를 체크해서 완성된 데이터에 포함시켜준다.
+    // 2. 검색된 user의 board 개수를 체크해서 완성된 데이터에 포함시켜준다.
     const idList = nickNameUserData.map((el) => el.id);
     const countList = [];
+    const noReviewList = [];
 
     for (let searchedId of idList) {
       const countData = await this.writeBoardRepository.count({
         user_id: searchedId,
       });
       countList.push(countData);
+      const reviewsData = await this.writeBoardRepository.count({
+        user_id: searchedId,
+        reviews: null,
+      });
+      noReviewList.push(reviewsData);
     }
+
+    console.log(countList, noReviewList);
+    // 3. 검색된 user의 reviews 개수를 체크해서 데이터에 포함시켜줘야한다.
+    // reviews가 null인 값을 빼준다.
 
     const nickNameUserList = nickNameUserData.map((user, idx) => {
       return {
@@ -257,7 +267,8 @@ export class SearchService {
         profileImg: user.profileImage,
         foodType: user.foodType,
         foodStyle: user.foodStyle,
-        commentCount: countList[idx],
+        boardCount: countList[idx],
+        reviewsCount: countList[idx] - noReviewList[idx],
       };
     });
 
@@ -278,7 +289,7 @@ export class SearchService {
         'user.nickName',
         'user.profileImage',
         'writeBoard.rating',
-        'writeBoard.comments',
+        'writeBoard.reviews',
         'hashtag.tag',
       ])
       .leftJoin('shopInfo.writeBoard', 'writeBoard')
@@ -321,7 +332,7 @@ export class SearchService {
             nickName: fWBEl.user.nickname,
             profileImg: fWBEl.user.profileImage,
             rating: fWBEl.rating,
-            comments: fWBEl.comments,
+            reviews: fWBEl.reviews,
             hashtag: fWBEl.hashtag.map((hashtagEl) => hashtagEl.tag),
           };
         }),

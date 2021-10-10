@@ -31,8 +31,8 @@ export class Write_Board {
   @Column({ default: false })
   best: boolean;
 
-  @Column()
-  comments: string;
+  @Column({ nullable: true })
+  reviews: string;
 
   @Column({ default: false })
   isDeleted: boolean;

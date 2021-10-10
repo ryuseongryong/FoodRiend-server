@@ -38,7 +38,7 @@ export class BoardService {
       best: false,
       isDeleted: false,
       house_info_id: existTitle[0].id,
-      comments: dto.comments,
+      reviews: dto.reviews,
     });
 
     for (let i = 0; i < dto.hashtag.length; i++) {
@@ -89,7 +89,7 @@ export class BoardService {
           location: dto.location,
           img: dto.img,
           rating: dto.rating,
-          comments: dto.comments,
+          reviews: dto.reviews,
         },
         status: 200,
       },
