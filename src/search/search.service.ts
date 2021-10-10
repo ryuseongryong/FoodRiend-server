@@ -85,9 +85,10 @@ export class SearchService {
         'user.profileImage',
         'shopInfo.title',
         'shopInfo.location',
+        'shopInfo.aveRating',
         // upload_Image - foodImage
         'img.foodImage',
-        'writeBoard.rating',
+        // 'writeBoard.rating',
         'writeBoard.comments',
         'hashtag.tag',
         'writeBoard.created_at',
@@ -110,7 +111,7 @@ export class SearchService {
         location: el.shopInfo.location,
         title: el.shopInfo.title,
         comments: el.comments,
-        rating: el.rating,
+        aveRating: el.shopInfo.aveRating,
         created_at: el.created_at,
       };
     });
@@ -158,7 +159,7 @@ export class SearchService {
         foodCategory: result.types,
         location: result.formatted_address,
         relatedImg: result.photos,
-        aveRating: result.rating,
+        aveRating: null,
         priceLevel: result.price_level,
         menu: null,
         friends: null,
