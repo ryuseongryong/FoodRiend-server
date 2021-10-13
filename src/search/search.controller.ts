@@ -11,6 +11,8 @@ import {
 import { SearchService } from './search.service';
 import { CreateSearchDto } from './dto/create-search.dto';
 import { UpdateSearchDto } from './dto/update-search.dto';
+import { CreateBookmarkDto } from './dto/create-bookmark.dto';
+import { BookmarkType } from './bookmark.type';
 
 @Controller('api/search')
 export class SearchController {
@@ -32,7 +34,13 @@ export class SearchController {
   }
 
   @Patch('bookmark/:type/:id')
-  update(@Param('id') id: string) {}
+  bookmark(
+    @Param('type') type: BookmarkType['wantOrBest'],
+    @Param('id') id: number,
+    @Body() body: CreateBookmarkDto,
+  ) {
+    return this.searchService.bookmark(type, id, body);
+  }
 
   @Delete('feed/:id')
   remove(@Param('id') id: string) {}

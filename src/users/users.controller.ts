@@ -21,6 +21,8 @@ export class UsersController {
     summary: '프로필 API',
     description: '프로필관련 정보를 응답한다.',
   })
+
+  // 인증하고 params 유지
   @ApiParam({ name: 'id' })
   getUserInfo(@Param('id') id: number) {
     this.usersService.getUserInfo(id);
