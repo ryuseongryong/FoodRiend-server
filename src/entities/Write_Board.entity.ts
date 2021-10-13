@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Unique,
 } from 'typeorm/index';
 import { Hashtag } from './Hashtag.entity';
 import { Shop_Info } from './Shop_Info.entity';
@@ -15,6 +16,7 @@ import { Upload_Image } from './Upload_Image.entity';
 import { Users } from './Users.entity';
 
 @Entity()
+@Unique('BoardUnique', ['user_id', 'house_info_id'])
 export class Write_Board {
   @PrimaryGeneratedColumn()
   id: number;

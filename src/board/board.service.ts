@@ -24,6 +24,7 @@ export class BoardService {
   // 없으면 저장
 
   async create(id: number, dto: CreateBoardDto) {
+    // 식당이름이 일치하면 거르기
     const existTitle = await this.shopInfoRepository.find({
       where: [{ id: dto.shopId }, { title: dto.title }],
     });
@@ -40,7 +41,35 @@ export class BoardService {
         location: dto.location,
       });
       chosenShopId = newShopInfo.id;
-      console.log('newShopInfo: ', newShopInfo);
+    }
+
+    // const writeBoard = await this.boardRepository
+    //   .createQueryBuilder()
+    //   .insert()
+    //   .into(Write_Board)
+    //   .values({
+    //     user_id: id,
+    //     rating: dto.rating,
+    //     best: false,
+    //     isDeleted: false,
+    //     house_info_id: chosenShopId,
+    //     reviews: dto.reviews,
+    //   })
+    //   .orIgnore()
+    //   .execute();
+
+    const findBoard = await this.boardRepository.find({
+      where: { user_id: id, house_info_id: chosenShopId },
+    });
+
+    // 게시물 수정 로직은 따로 만드는 것이 좋을 것 같다.
+    // 이미 등록된 게시물인 경우,
+    if (findBoard.length) {
+      return {
+        data: findBoard,
+        status: 409,
+        message: 'already saved, please use update function API',
+      };
     }
 
     const writeBoard = await this.boardRepository.save({
@@ -66,6 +95,9 @@ export class BoardService {
         house_info_id: chosenShopId,
       });
     }
+
+    //! bookmark에 등록된 경우 삭제하기 (가보고싶어요 -> 먹어봤어요 변경)
+    // 작성해야함
 
     // aveRating 계산해서 설정하기
     // 평균값 = 평점의 합 / 해당 shopInfo로 등록한 writeBoard의 수

@@ -6,11 +6,13 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm/index';
 import { Shop_Info } from './Shop_Info.entity';
 import { Users } from './Users.entity';
 
 @Entity()
+@Unique('bookmarkUnique', ['user_id', 'house_info_id'])
 export class Bookmark {
   @PrimaryGeneratedColumn()
   id: number;

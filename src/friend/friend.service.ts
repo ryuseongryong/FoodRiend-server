@@ -63,6 +63,8 @@ export class FriendService {
     //   return { data: null, status: 200, isData: isData };
     // }
 
+    // 친구 신청상태의 테이블
+
     const addFriendObjArr = idList.map((friend) => {
       return { user_id: id, friend };
     });
@@ -71,16 +73,10 @@ export class FriendService {
       .createQueryBuilder('friend')
       .insert()
       .into(Friend_List)
-      .values(addFriendObjArr);
-
-    const [originSql, params] = addFriendQuery.getQueryAndParameters();
-
-    const insertIgnoreSql = originSql.replace(
-      'INSERT INTO',
-      'INSERT IGNORE INTO',
-    );
-
-    await this.friendListRepository.manager.query(insertIgnoreSql, params);
+      .values(addFriendObjArr)
+      .orIgnore()
+      .updateEntity(false)
+      .execute();
 
     //?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     //? 반대의 경우도 친구추가해주기
@@ -92,20 +88,10 @@ export class FriendService {
       .createQueryBuilder('friend')
       .insert()
       .into(Friend_List)
-      .values(addOppositeFriendObjArr);
-
-    const [oppositeOriginSql, oppositeParams] =
-      addOppositeFriendQuery.getQueryAndParameters();
-
-    const insertIgnoreOppositeSql = oppositeOriginSql.replace(
-      'INSERT INTO',
-      'INSERT IGNORE INTO',
-    );
-
-    await this.friendListRepository.manager.query(
-      insertIgnoreOppositeSql,
-      oppositeParams,
-    );
+      .values(addOppositeFriendObjArr)
+      .updateEntity(false)
+      .orIgnore()
+      .execute();
 
     // 추가적으로 친구 추천 -> 친구 신청 -> 상대방에서 친구 수락 했을 때 동작해야함
     // 친구 목록 -> 친구 해제 -> 삭제
@@ -160,7 +146,15 @@ export class FriendService {
     return `This action updates a #${id} friend`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} friend`;
+  async delete(userId: number, removeFriendId: number) {
+    await this.friendListRepository.delete({
+      user_id: userId,
+      friend: removeFriendId,
+    });
+    await this.friendListRepository.delete({
+      user_id: removeFriendId,
+      friend: userId,
+    });
+    return { data: { userId, friendId: removeFriendId }, status: 200 };
   }
 }

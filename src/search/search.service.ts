@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, Like, ILike } from 'typeorm';
+import { Repository, createQueryBuilder, Like, ILike, In } from 'typeorm';
 import { CreateSearchDto } from './dto/create-search.dto';
 import { UpdateSearchDto } from './dto/update-search.dto';
 import { Users } from '../entities/Users.entity';
@@ -17,6 +17,8 @@ import {
   PlaceType1,
   AddressType,
 } from '@googlemaps/google-maps-services-js';
+import { CreateBookmarkDto } from './dto/create-bookmark.dto';
+import { BookmarkType } from './bookmark.type';
 const qs = require('query-string');
 
 @Injectable()
@@ -82,6 +84,7 @@ export class SearchService {
       .select([
         'user.id',
         'user.name',
+        'user.nickname',
         'user.profileImage',
         'shopInfo.title',
         'shopInfo.location',
@@ -104,6 +107,7 @@ export class SearchService {
       return {
         userId: el.user.id,
         name: el.user.name,
+        nickname: el.user.nickname,
         profile: el.user.profileImage,
         image: el.img.map((el) => el.foodImage),
         // 배열 내 객체 형태, hashtag: el.hashtag,
@@ -136,10 +140,10 @@ export class SearchService {
       },
       timeout: 1000,
     });
-
     // shopNameList에 포함된 title 중 DB title이 일치하는 경우
     // shopInfoGoogleAPI에서 제외시켜야함.
     const textSearchShopInfoGoogleAPI = textSearch.data.results;
+    console.log(textSearchShopInfoGoogleAPI);
     const shopInfoGoogleAPI = textSearchShopInfoGoogleAPI.map((result) => {
       // console.log(result.name, result.types.includes('food' as AddressType));
       if (result.photos === undefined) {
@@ -168,32 +172,42 @@ export class SearchService {
     // console.log(shopInfoGoogleAPI);
 
     //? 전화번호 등 정보를 가져오기 위해서 Detail 필요, 없는 정보는 알아서 제외됨
-    // const placeIdList = []
-    // const addCheck = []
-    // for(let searchData of textSearch.data.results) {
-    //   for(let PID in searchData) {
-    //     if(PID === 'place_id') {
+    // const placeIdList = [];
+    // const addCheck = [];
+    // for (let searchData of textSearch.data.results) {
+    //   for (let PID in searchData) {
+    //     if (PID === 'place_id') {
     //       placeIdList.push(searchData[PID]);
     //       // console.log("PID: ", PID, searchData[PID])
-    //     }
-    //     else if(PID === 'formatted_address') {
-    //       addCheck.push(searchData[PID])
+    //     } else if (PID === 'formatted_address') {
+    //       addCheck.push(searchData[PID]);
     //     }
     //   }
     // }
-    // const placeId = textSearch.data.results[0].place_id
-    // console.log(placeIdList, addCheck, textSearch.data.results[0])
+    // const placeId = textSearch.data.results[0].place_id;
+    // console.log(placeIdList, addCheck, textSearch.data.results[0]);
 
     // const placeDetails = await client.placeDetails({
     //   params: {
     //     place_id: placeId,
-    //     fields: ['formatted_phone_number', 'formatted_address', 'name', 'opening_hours', 'photos', 'price_level', 'rating', 'types', 'url', 'vicinity'],
+    //     fields: [
+    //       'formatted_phone_number',
+    //       'formatted_address',
+    //       'name',
+    //       'opening_hours',
+    //       'photos',
+    //       'price_level',
+    //       'rating',
+    //       'types',
+    //       'url',
+    //       'vicinity',
+    //     ],
     //     language: 'ko' as Language,
-    //     key: process.env.API_KEY
+    //     key: process.env.API_KEY,
     //   },
-    //   timeout: 1000
-    // })
-    // console.log("placeDetails.data", placeDetails.data)
+    //   timeout: 1000,
+    // });
+    // console.log('placeDetails.data', placeDetails.data);
     //? return ;
 
     // user :
@@ -282,6 +296,7 @@ export class SearchService {
         'shopInfo.foodCategory',
         'shopInfo.location',
         'img.foodImage',
+        'shopInfo.id',
         'shopInfo.aveRating',
         'shopInfo.menu',
         'user.id',
@@ -318,6 +333,7 @@ export class SearchService {
       });
       return {
         isDB: true,
+        shopId: el.id,
         title: el.title,
         mainImg: el.mainImage,
         foodCategory: el.foodCategory,
@@ -329,7 +345,7 @@ export class SearchService {
           return {
             userId: fWBEl.user.id,
             name: fWBEl.user.name,
-            nickName: fWBEl.user.nickname,
+            nickname: fWBEl.user.nickname,
             profileImg: fWBEl.user.profileImage,
             rating: fWBEl.rating,
             reviews: fWBEl.reviews,
@@ -412,6 +428,94 @@ export class SearchService {
     return {
       data: friendData,
       status: 200,
+    };
+  }
+
+  async bookmark(
+    type: BookmarkType['wantOrBest'],
+    id: number,
+    body: CreateBookmarkDto,
+  ) {
+    console.log('type@@', type, '\nid@@', id, '\ncreateBookmarkDto', body);
+
+    // want인 경우 bookmark에 등록
+    if (type === 'want') {
+      // shopid를 필요로 함 = board 로직과 동일하게 구성해야함
+
+      const existTitle = await this.shopInfoRepository.find({
+        id: body.shopId,
+      });
+
+      let chosenShopId = existTitle[0].id;
+
+      if (existTitle.length === 0) {
+        const newShopInfo = await this.shopInfoRepository.save({
+          mainImage: body.mainImage,
+          foodCategory: body.foodCategory,
+          menu: body.menu,
+          contact: body.contact,
+          title: body.title,
+          location: body.location,
+        });
+        chosenShopId = newShopInfo.id;
+      }
+
+      const findBookmark = await this.bookmarkRepository.find({
+        user_id: id,
+        house_info_id: chosenShopId,
+      });
+
+      if (findBookmark.length) {
+        return {
+          data: findBookmark,
+          status: 409,
+          message: 'already saved, please use update function API',
+        };
+      }
+
+      const addBookmarkQuery = this.bookmarkRepository
+        .createQueryBuilder('bookmark')
+        .insert()
+        .into(Bookmark)
+        .values({ user_id: id, house_info_id: chosenShopId })
+        .orIgnore()
+        .updateEntity(false)
+        .execute();
+
+      // 방문했을 경우 want에서 삭제해야 하는지 여부(북마크 자동 해제?)
+    }
+    // best인 경우 feedId를 가지는 writeBoard의 best 값을 true로 변경
+    else if (type === 'best') {
+      if (typeof body.feedId !== 'object') {
+        return { data: null, status: 422, message: 'wrong body type' };
+      }
+      body.feedId.forEach(async (feed) => {
+        const a = await this.writeBoardRepository.update(feed, { best: true });
+      });
+    }
+    // 세가지 버전의 숫자를 리턴하기
+    // 1. 방문한 가게의 수(등록한 게시물의 수와 동일 = 한 가게당 유저의 게시물은 하나만 가능)
+    // 2. 가고싶어요 표시한 가게의 수(북마크 등록한 가게의 수 - )
+    // 3. best 등록한 feed의 가게 수
+    const visitCount = await this.writeBoardRepository.count({
+      user_id: id,
+    });
+    const wantCount = await this.bookmarkRepository.count({
+      user_id: id,
+    });
+    const bestCount = await this.writeBoardRepository.count({
+      user_id: id,
+      best: true,
+    });
+
+    return {
+      data: {
+        visit: visitCount,
+        want: wantCount,
+        best: bestCount,
+      },
+      type: type,
+      status: 201,
     };
   }
 

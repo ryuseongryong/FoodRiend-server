@@ -39,6 +39,9 @@ export class CreateBoardDto {
   readonly reviews: string;
 
   @Expose()
+  readonly best: boolean;
+
+  @Expose()
   @ApiProperty()
   readonly hashtag: string[];
 }
