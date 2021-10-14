@@ -81,29 +81,70 @@ export class SearchService {
 
     const allData = await this.writeBoardRepository
       .createQueryBuilder('writeBoard')
+      .leftJoin('writeBoard.user', 'user')
+      .leftJoin('writeBoard.hashtag', 'hashtag')
+      .leftJoin('writeBoard.shopInfo', 'shopInfo')
+      .leftJoin('writeBoard.img', 'img')
       .select([
         'user.id',
         'user.name',
         'user.nickname',
         'user.profileImage',
+        'shopInfo.id',
         'shopInfo.title',
         'shopInfo.location',
         'shopInfo.aveRating',
         // upload_Image - foodImage
         'img.foodImage',
-        // 'writeBoard.rating',
+        'writeBoard.rating',
         'writeBoard.reviews',
         'hashtag.tag',
         'writeBoard.created_at',
       ])
-      .leftJoin('writeBoard.user', 'user')
-      .leftJoin('writeBoard.hashtag', 'hashtag')
-      .leftJoin('writeBoard.shopInfo', 'shopInfo')
-      .leftJoin('writeBoard.img', 'img')
       .where('writeBoard.user_id IN (:id)', { id: friendList })
       .getMany();
 
-    const refinedData = allData.map((el) => {
+    let aveRating: number;
+
+    // 같은 가게에 친구들의 평점 대한 평균값을 구해야 한다.
+    // 1. 가게는 shopId로 구분하여 평점을 더해주고, 해당되는 shopId를 가진 게시물에 넣어줘야 한다.
+    // 1-1. 첫 번째 객체의 shopId와 동일한 객체를 구해준다.
+    // 1-2. 동일한 객체들의 평점을 더하고 합을 구해서 그것들의 length로 나눠준 다음 그들의 aveRating에 넣어준다.
+    let shopIdArr = [];
+    let shopAveRatingData = [];
+    allData.forEach((el) => {
+      if (!shopIdArr.includes(el.shopInfo.id)) {
+        shopIdArr.push(el.shopInfo.id);
+      }
+    });
+    shopIdArr.sort((a, b) => a - b);
+    for (let shopId of shopIdArr) {
+      let sum = [];
+      let count = 0;
+      allData.forEach((el, idx) => {
+        if (shopId === el.shopInfo.id) {
+          sum.push(el.rating);
+          count++;
+        }
+        if (idx === allData.length - 1) {
+          shopAveRatingData.push({
+            shopId,
+            aveRating: sum.reduce((acc, cur) => acc + cur) / count,
+          });
+          sum = [];
+          count = 0;
+        }
+      });
+    }
+
+    const refinedData = allData.map((el, idx) => {
+      // 앞에서 구한 aveRating을 적용시켜준다.
+      for (let aveData of shopAveRatingData) {
+        if (el.shopInfo.id === aveData.shopId) {
+          el.shopInfo.aveRating = aveData.aveRating;
+        }
+      }
+
       return {
         userId: el.user.id,
         name: el.user.name,
@@ -112,10 +153,10 @@ export class SearchService {
         image: el.img.map((el) => el.foodImage),
         // 배열 내 객체 형태, hashtag: el.hashtag,
         hashtag: el.hashtag.map((hashtagEl) => hashtagEl.tag),
-        location: el.shopInfo.location,
         title: el.shopInfo.title,
+        location: el.shopInfo.location,
         reviews: el.reviews,
-        aveRating: el.shopInfo.aveRating,
+        aveRating: Math.round(el.shopInfo.aveRating * 10) / 10,
         created_at: el.created_at,
       };
     });
@@ -171,67 +212,45 @@ export class SearchService {
     });
     // console.log(shopInfoGoogleAPI);
 
-    //? 전화번호 등 정보를 가져오기 위해서 Detail 필요, 없는 정보는 알아서 제외됨
-    // const placeIdList = [];
-    // const addCheck = [];
-    // for (let searchData of textSearch.data.results) {
-    //   for (let PID in searchData) {
-    //     if (PID === 'place_id') {
-    //       placeIdList.push(searchData[PID]);
-    //       // console.log("PID: ", PID, searchData[PID])
-    //     } else if (PID === 'formatted_address') {
-    //       addCheck.push(searchData[PID]);
-    //     }
-    //   }
-    // }
-    // const placeId = textSearch.data.results[0].place_id;
-    // console.log(placeIdList, addCheck, textSearch.data.results[0]);
+    //! Google Api Detail ver.
+    /* 전화번호 등 정보를 가져오기 위해서 Detail 필요, 없는 정보는 알아서 제외됨
+    const placeIdList = [];
+    const addCheck = [];
+    for (let searchData of textSearch.data.results) {
+      for (let PID in searchData) {
+        if (PID === 'place_id') {
+          placeIdList.push(searchData[PID]);
+          // console.log("PID: ", PID, searchData[PID])
+        } else if (PID === 'formatted_address') {
+          addCheck.push(searchData[PID]);
+        }
+      }
+    }
+    const placeId = textSearch.data.results[0].place_id;
+    console.log(placeIdList, addCheck, textSearch.data.results[0]);
 
-    // const placeDetails = await client.placeDetails({
-    //   params: {
-    //     place_id: placeId,
-    //     fields: [
-    //       'formatted_phone_number',
-    //       'formatted_address',
-    //       'name',
-    //       'opening_hours',
-    //       'photos',
-    //       'price_level',
-    //       'rating',
-    //       'types',
-    //       'url',
-    //       'vicinity',
-    //     ],
-    //     language: 'ko' as Language,
-    //     key: process.env.API_KEY,
-    //   },
-    //   timeout: 1000,
-    // });
-    // console.log('placeDetails.data', placeDetails.data);
-    //? return ;
-
-    // user :
-    //   user - user id,
-    //          name,
-    //          nickName,
-    //          profileImage,
-    //          foodType,
-    //          foodStyle,
-    // shop :
-    //   shopInfo - title,
-    //              mainImage,
-    //              foodCategory,
-    //              location,
-    //              aveRating,
-    //              menu,
-    //   uploadImage - foodImage,
-    //   friends :
-    //     user - user id,
-    //            name,
-    //            nickName,
-    //            profileImage,
-    //     WriteBoard - reviews,
-    //                 rating
+    const placeDetails = await client.placeDetails({
+      params: {
+        place_id: placeId,
+        fields: [
+          'formatted_phone_number',
+          'formatted_address',
+          'name',
+          'opening_hours',
+          'photos',
+          'price_level',
+          'rating',
+          'types',
+          'url',
+          'vicinity',
+        ],
+        language: 'ko' as Language,
+        key: process.env.API_KEY,
+      },
+      timeout: 1000,
+    });
+    console.log('placeDetails.data', placeDetails.data);
+    return ; */
 
     // ! nickName으로 검색된 유저 정보 가져오기
     // 1. query와 일치하는 nickName을 가진 user 정보를 가져온다.
@@ -290,12 +309,17 @@ export class SearchService {
     // 1. query가 포힘된 shop title의 shop과 관련된 정보를 가져온다.
     const allData = await this.shopInfoRepository
       .createQueryBuilder('shopInfo')
+      .leftJoin('shopInfo.writeBoard', 'writeBoard')
+      .leftJoin('writeBoard.img', 'img')
+      .leftJoin('writeBoard.hashtag', 'hashtag')
+      .leftJoin('writeBoard.user', 'user')
       .select([
         'shopInfo.title',
         'shopInfo.mainImage',
         'shopInfo.foodCategory',
         'shopInfo.location',
         'img.foodImage',
+        'img.created_at',
         'shopInfo.id',
         'shopInfo.aveRating',
         'shopInfo.menu',
@@ -307,15 +331,12 @@ export class SearchService {
         'writeBoard.reviews',
         'hashtag.tag',
       ])
-      .leftJoin('shopInfo.writeBoard', 'writeBoard')
-      .leftJoin('shopInfo.img', 'img')
-      .leftJoin('writeBoard.hashtag', 'hashtag')
-      .leftJoin('writeBoard.user', 'user')
       .where(`shopInfo.title LIKE :title`, { title: `%${query}%` })
       .getMany();
 
-    if (allData.length === 0 && textSearchShopInfoGoogleAPI.length === 0)
+    if (allData.length === 0 && textSearchShopInfoGoogleAPI.length === 0) {
       isShopData = false;
+    }
 
     // 2.1. shop관련 정보를 API에 맞게 변경한다.
     // 2.2. user의 id를 기반으로 친구 정보를 가져와서 친구가 작성한 게시물만 저장한다.
@@ -327,10 +348,14 @@ export class SearchService {
     const DBshopNameList = [];
 
     const shopInfoList = allData.map((el) => {
+      let aveRating: number;
       DBshopNameList.push(el.title);
       const filteredWB = el.writeBoard.filter((wbEl, idx) => {
         return friendList.includes(wbEl.user.id);
       });
+      aveRating =
+        filteredWB.reduce((acc, cur) => acc + cur.rating, 0) /
+        filteredWB.length;
       return {
         isDB: true,
         shopId: el.id,
@@ -338,8 +363,7 @@ export class SearchService {
         mainImg: el.mainImage,
         foodCategory: el.foodCategory,
         location: el.location,
-        relatedImg: el.img.map((imgEl) => imgEl.foodImage),
-        aveRating: el.aveRating,
+        aveRating: Math.round(aveRating * 10) / 10,
         menu: el.menu,
         friends: filteredWB.map((fWBEl) => {
           return {
@@ -347,6 +371,9 @@ export class SearchService {
             name: fWBEl.user.name,
             nickname: fWBEl.user.nickname,
             profileImg: fWBEl.user.profileImage,
+            relatedImg: fWBEl.img.map((imgEl) => {
+              return { img: imgEl.foodImage, created_at: imgEl.created_at };
+            }),
             rating: fWBEl.rating,
             reviews: fWBEl.reviews,
             hashtag: fWBEl.hashtag.map((hashtagEl) => hashtagEl.tag),
@@ -446,7 +473,7 @@ export class SearchService {
         id: body.shopId,
       });
 
-      let chosenShopId = existTitle[0].id;
+      let chosenShopId: number;
 
       if (existTitle.length === 0) {
         const newShopInfo = await this.shopInfoRepository.save({
@@ -458,7 +485,7 @@ export class SearchService {
           location: body.location,
         });
         chosenShopId = newShopInfo.id;
-      }
+      } else if (existTitle.length) chosenShopId = existTitle[0].id;
 
       const findBookmark = await this.bookmarkRepository.find({
         user_id: id,
