@@ -438,6 +438,8 @@ export class SearchService {
   ) {
     console.log('type@@', type, '\nid@@', id, '\ncreateBookmarkDto', body);
 
+    let Delete: number = 0;
+    let Insert: number = 0;
     // want인 경우 bookmark에 등록
     if (type === 'want') {
       // shopid를 필요로 함 = board 로직과 동일하게 구성해야함
@@ -465,24 +467,24 @@ export class SearchService {
         house_info_id: chosenShopId,
       });
 
+      // 이미 등록이 되어 있는 경우에는 삭제하기
       if (findBookmark.length) {
-        return {
-          data: findBookmark,
-          status: 409,
-          message: 'already saved, please use update function API',
-        };
+        Delete++;
+        await this.bookmarkRepository.delete({
+          user_id: id,
+          house_info_id: chosenShopId,
+        });
+      } else if (!findBookmark.length) {
+        Insert++;
+        await this.bookmarkRepository
+          .createQueryBuilder('bookmark')
+          .insert()
+          .into(Bookmark)
+          .values({ user_id: id, house_info_id: chosenShopId })
+          .orIgnore()
+          .updateEntity(false)
+          .execute();
       }
-
-      const addBookmarkQuery = this.bookmarkRepository
-        .createQueryBuilder('bookmark')
-        .insert()
-        .into(Bookmark)
-        .values({ user_id: id, house_info_id: chosenShopId })
-        .orIgnore()
-        .updateEntity(false)
-        .execute();
-
-      // 방문했을 경우 want에서 삭제해야 하는지 여부(북마크 자동 해제?)
     }
     // best인 경우 feedId를 가지는 writeBoard의 best 값을 true로 변경
     else if (type === 'best') {
@@ -490,7 +492,16 @@ export class SearchService {
         return { data: null, status: 422, message: 'wrong body type' };
       }
       body.feedId.forEach(async (feed) => {
-        const a = await this.writeBoardRepository.update(feed, { best: true });
+        const findBest = await this.writeBoardRepository.find({
+          id: feed,
+        });
+        if (findBest[0].best) {
+          Delete++;
+          await this.writeBoardRepository.update(feed, { best: false });
+        } else if (!findBest[0].best) {
+          Insert++;
+          await this.writeBoardRepository.update(feed, { best: true });
+        }
       });
     }
     // 세가지 버전의 숫자를 리턴하기
@@ -515,7 +526,9 @@ export class SearchService {
         best: bestCount,
       },
       type: type,
-      status: 201,
+      delete: Delete,
+      insert: Insert,
+      status: 200,
     };
   }
 

@@ -16,13 +16,12 @@ export class FriendService {
     @InjectRepository(Friend_List)
     private readonly friendListRepository: Repository<Friend_List>,
   ) {}
-  //!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
   async findAll(userArray: FindFriendDto) {
     const phoneNumberList = userArray['phoneNumberList'];
     let isData = true;
 
     // users DB에서 userArray에 포함된 phoneNumber와 일치하는 PhoneNumber를 가진 user정보를 가져와야 함
-
     const userListData = await this.usersRepository.find({
       phoneNumber: In(phoneNumberList),
     });
@@ -48,7 +47,6 @@ export class FriendService {
     return { data: userList, status: 200, isData: isData };
   }
 
-  //!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   async addFriend(id: number, idArray: AddFriendDto) {
     const idList = idArray['idList'];
     let isData = true;
@@ -58,10 +56,10 @@ export class FriendService {
     });
     // 친구등록하는 로직 구현
 
-    // if (userListData.length === 0) {
-    //   isData = false;
-    //   return { data: null, status: 200, isData: isData };
-    // }
+    if (userListData.length === 0) {
+      isData = false;
+      return { data: null, status: 200, isData: isData };
+    }
 
     // 친구 신청상태의 테이블
 
@@ -69,7 +67,7 @@ export class FriendService {
       return { user_id: id, friend };
     });
 
-    const addFriendQuery = await this.friendListRepository
+    await this.friendListRepository
       .createQueryBuilder('friend')
       .insert()
       .into(Friend_List)
@@ -84,13 +82,13 @@ export class FriendService {
       return { user_id: friend, friend: id };
     });
 
-    const addOppositeFriendQuery = await this.friendListRepository
+    await this.friendListRepository
       .createQueryBuilder('friend')
       .insert()
       .into(Friend_List)
       .values(addOppositeFriendObjArr)
-      .updateEntity(false)
       .orIgnore()
+      .updateEntity(false)
       .execute();
 
     // 추가적으로 친구 추천 -> 친구 신청 -> 상대방에서 친구 수락 했을 때 동작해야함

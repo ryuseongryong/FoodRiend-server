@@ -1,1 +1,3 @@
-export type BookmarkType = { wantOrBest: 'want' | 'best' };
+export type BookmarkType = {
+  wantOrBest: 'want' | 'best';
+};

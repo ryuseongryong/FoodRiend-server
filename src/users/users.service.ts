@@ -7,6 +7,7 @@ import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
+import { BookmarkType } from '../search/bookmark.type';
 
 @Injectable()
 export class UsersService {
@@ -154,6 +155,15 @@ export class UsersService {
       status: 200,
       isData: isData,
     };
+  }
+
+  async getUserBookmark(type: BookmarkType['wantOrBest'], id: number) {
+    if (type === 'want') {
+      // bookmark에서 user를 찾고, 해당되는 가게의 정보를 준다.
+      const wantData = await this.bookmarkRepository.find({
+        user_id: id,
+      });
+    }
   }
 
   async update(id: number, dto: PatchUserDto) {
