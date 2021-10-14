@@ -8,6 +8,8 @@ import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
 import { PassportModule } from '@nestjs/passport';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { Upload_Image } from '../entities/Upload_Image.entity';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { PassportModule } from '@nestjs/passport';
       Write_Board,
       Bookmark,
       Hashtag,
+      Shop_Info,
+      Upload_Image,
     ]),
   ],
   controllers: [UsersController],

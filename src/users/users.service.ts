@@ -7,6 +7,9 @@ import { Friend_List } from '../entities/Friend_List.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { Bookmark } from '../entities/Bookmark.entity';
 import { Hashtag } from '../entities/Hashtag.entity';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { BookmarkType } from '../search/bookmark.type';
+import { Upload_Image } from '../entities/Upload_Image.entity';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +23,10 @@ export class UsersService {
   private readonly bookmarkRepository: Repository<Bookmark>;
   @InjectRepository(Hashtag)
   private readonly hashtagRepository: Repository<Hashtag>;
+  @InjectRepository(Shop_Info)
+  private readonly shopInfoRepository: Repository<Shop_Info>;
+  @InjectRepository(Upload_Image)
+  private readonly uploadImageRepository: Repository<Upload_Image>;
 
   async findOne(kakaoId: bigint): Promise<Users | undefined> {
     const user = await this.usersRepository.findOne({ kakaoId: kakaoId });
@@ -154,6 +161,82 @@ export class UsersService {
       status: 200,
       isData: isData,
     };
+  }
+
+  async getUserBookmark(type: BookmarkType['wantOrBest'], id: number) {
+    let isData = true;
+    if (type === 'want') {
+      // bookmark에서 user를 찾고, 해당되는 가게의 정보를 준다.
+      const wantData = await this.shopInfoRepository
+        .createQueryBuilder('shopInfo')
+        .leftJoinAndSelect('shopInfo.bookmark', 'bookmark')
+        .leftJoinAndSelect('shopInfo.writeBoard', 'writeBoard')
+        .leftJoinAndSelect('shopInfo.img', 'img')
+        .select([
+          'shopInfo.id',
+          'shopInfo.title',
+          'shopInfo.location',
+          'shopInfo.mainImage',
+        ])
+        .where('bookmark.user_id = :id', { id: id })
+        .getMany();
+      console.log(wantData);
+      const shopWantList = wantData.map((shop) => {
+        return {
+          shopId: shop.id,
+          title: shop.title,
+          location: shop.location,
+          mainImage: shop.mainImage,
+        };
+      });
+      if (!wantData.length) isData = false;
+      return {
+        shop: shopWantList,
+        status: 200,
+        isData: isData,
+      };
+    } else if (type === 'best') {
+      // writeBoard에서 user_id가 일치하는 데이터중, best:true인 데이터만 가져온다.
+      const bestData = await this.writeBoardRepository
+        .createQueryBuilder('writeBoard')
+        .leftJoinAndSelect('writeBoard.shopInfo', 'shopInfo')
+        .leftJoinAndSelect('writeBoard.img', 'img')
+        .leftJoinAndSelect('writeBoard.hashtag', 'hashtag')
+        .select([
+          'writeBoard.id',
+          'shopInfo.id',
+          'shopInfo.title',
+          'shopInfo.location',
+          'shopInfo.mainImage',
+          'img.foodImage',
+          'hashtag.tag',
+          'writeBoard.rating',
+          'writeBoard.reviews',
+        ])
+        .where('writeBoard.user_id = :id', { id: id })
+        .andWhere('writeBoard.best = true')
+        .getMany();
+
+      const bestList = bestData.map((data) => {
+        return {
+          feedId: data.id,
+          title: data.shopInfo.title,
+          location: data.shopInfo.location,
+          img: data.img,
+          hashtag: data.hashtag,
+          rating: data.rating,
+          reviews: data.reviews,
+        };
+      });
+      if (!bestList.length) {
+        isData = false;
+      }
+      return {
+        feed: bestList,
+        status: 200,
+        isData: isData,
+      };
+    }
   }
 
   async update(id: number, dto: PatchUserDto) {

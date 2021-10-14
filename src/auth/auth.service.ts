@@ -44,8 +44,14 @@ export class AuthService {
       secure: true,
       sameSite: 'none',
     });
+
+    let isNewMember = true;
+    if (user.name !== null) {
+      isNewMember = false;
+    }
     return res.status(201).json({
       userId: user.id,
+      isNewMember,
       // access_token: accessToken,
     });
   }

@@ -14,6 +14,8 @@ import { Users } from '../entities/Users.entity';
 import { Write_Board } from '../entities/Write_Board.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { Shop_Info } from '../entities/Shop_Info.entity';
+import { Upload_Image } from '../entities/Upload_Image.entity';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { AuthController } from './auth.controller';
       Write_Board,
       Bookmark,
       Hashtag,
+      Shop_Info,
+      Upload_Image,
     ]),
   ],
   providers: [AuthService, LocalStrategy, UsersService, JwtStrategy],
