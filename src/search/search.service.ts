@@ -436,8 +436,6 @@ export class SearchService {
     id: number,
     body: CreateBookmarkDto,
   ) {
-    console.log('type@@', type, '\nid@@', id, '\ncreateBookmarkDto', body);
-
     let Delete: number = 0;
     let Insert: number = 0;
     // want인 경우 bookmark에 등록

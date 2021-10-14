@@ -76,7 +76,6 @@ export class FriendService {
       .updateEntity(false)
       .execute();
 
-    //?@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     //? 반대의 경우도 친구추가해주기
     const addOppositeFriendObjArr = idList.map((friend) => {
       return { user_id: friend, friend: id };
