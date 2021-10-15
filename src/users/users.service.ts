@@ -1,4 +1,9 @@
-import { ConsoleLogger, HttpException, Injectable } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto, PatchUserDto } from './dto/create-user.dto';
@@ -48,18 +53,26 @@ export class UsersService {
     });
 
     if (Object.keys(body).length === 0) {
-      return new HttpException('Does empty request', 403);
+      throw new HttpException('Does empty request', 403);
     }
 
     if (nicknameConfilctCheck !== undefined) {
-      return new HttpException('nickname conflict!', 409);
+      throw new HttpException('nickname conflict!', 409);
     }
+
     for (const key in body) {
       console.log(key, user[key], body[key]);
       user[key] = body[key];
     }
 
-    const createUser = await this.usersRepository.save(user);
+    let createUser;
+    if (user.name && user.nickname && user.foodType && user.foodStyle) {
+      createUser = await this.usersRepository.save(user);
+    } else if (
+      !(user.name && user.nickname && user.foodType && user.foodStyle)
+    ) {
+      return { message: 'not saved in Database' };
+    }
 
     return {
       data: {
@@ -137,6 +150,7 @@ export class UsersService {
 
     let isData = null;
     let customFeed;
+    console.log('feedData', feedData);
 
     if (feedData.length === 0) {
       isData = false;
@@ -150,6 +164,14 @@ export class UsersService {
       });
     } else {
       isData = true;
+      customFeed = feedData.map((el) => {
+        el.feedId = el.id;
+        delete el.id;
+        el.title = el.shopInfo.title;
+        el.location = el.shopInfo.location;
+        delete el.shopInfo;
+        return el;
+      });
     }
 
     return {
@@ -243,7 +265,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ id: id });
 
     if (Object.keys(dto).length === 0) {
-      return new HttpException('Does empty request', 403);
+      throw new HttpException('Does empty request', 403);
     }
 
     for (const reqBody in dto) {

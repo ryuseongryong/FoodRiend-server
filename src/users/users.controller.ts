@@ -26,7 +26,7 @@ export class UsersController {
   })
   @ApiParam({ name: 'id' })
   getUserInfo(@Param('id') id: number) {
-    this.usersService.getUserInfo(id);
+    return this.usersService.getUserInfo(id);
   }
   @Get('bookmark/:type/:id')
   getUserBookmark(

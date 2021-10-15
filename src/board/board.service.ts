@@ -29,7 +29,7 @@ export class BoardService {
       where: [{ id: dto.shopId }, { title: dto.title }],
     });
 
-    let chosenShopId = existTitle[0].id;
+    let chosenShopId: number;
     // shopInfo에 정보가 없는 경우, 입력하고 id값을 shopId로 사용하기
     if (existTitle.length === 0) {
       const newShopInfo = await this.shopInfoRepository.save({
@@ -41,7 +41,7 @@ export class BoardService {
         location: dto.location,
       });
       chosenShopId = newShopInfo.id;
-    }
+    } else if (existTitle.length) chosenShopId = existTitle[0].id;
 
     // const writeBoard = await this.boardRepository
     //   .createQueryBuilder()
@@ -146,7 +146,7 @@ export class BoardService {
     });
 
     if (existBoard.length === 0) {
-      return new HttpException('Not found board', 401);
+      throw new HttpException('Not found board', 401);
     }
 
     await this.boardRepository.update(
