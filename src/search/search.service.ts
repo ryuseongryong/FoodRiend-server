@@ -62,7 +62,7 @@ export class SearchService {
     const userData = await this.usersRepository.find({ id: id });
 
     if (userData.length === 0)
-      return new HttpException('There is no Friend', 404);
+      throw new HttpException('There is no Friend', 404);
 
     // 1. user의 friendsList를 바탕으로 해당 friend의 Id를 가져온다.
     const friendsListData = await this.friendListRepository.find({
@@ -90,12 +90,17 @@ export class SearchService {
         'user.name',
         'user.nickname',
         'user.profileImage',
+        'user.foodType',
+        'user.foodStyle',
         'shopInfo.id',
         'shopInfo.title',
         'shopInfo.location',
         'shopInfo.aveRating',
+        'shopInfo.foodCategory',
+        'shopInfo.menu',
         // upload_Image - foodImage
         'img.foodImage',
+        'img.created_at',
         'writeBoard.rating',
         'writeBoard.reviews',
         'hashtag.tag',
@@ -104,60 +109,108 @@ export class SearchService {
       .where('writeBoard.user_id IN (:id)', { id: friendList })
       .getMany();
 
-    let aveRating: number;
+    console.log('allData', allData);
 
+    // let aveRating: number;
     // 같은 가게에 친구들의 평점 대한 평균값을 구해야 한다.
     // 1. 가게는 shopId로 구분하여 평점을 더해주고, 해당되는 shopId를 가진 게시물에 넣어줘야 한다.
     // 1-1. 첫 번째 객체의 shopId와 동일한 객체를 구해준다.
     // 1-2. 동일한 객체들의 평점을 더하고 합을 구해서 그것들의 length로 나눠준 다음 그들의 aveRating에 넣어준다.
-    let shopIdArr = [];
-    let shopAveRatingData = [];
+    // let shopIdArr = [];
+    // let shopAveRatingData = [];
+    // allData.forEach((el) => {
+    //   if (!shopIdArr.includes(el.shopInfo.id)) {
+    //     shopIdArr.push(el.shopInfo.id)
+    //   }
+    // });
+    // shopIdArr.sort((a, b) => a - b);
+    // for (let shopId of shopIdArr) {
+    //   let friendWriteBoard = {};
+    //   friendWriteBoard[shopId] = [];
+    // }
+    // for (let shopId of shopIdArr) {
+    //   let sum = [];
+    //   let count = 0;
+    //   allData.forEach((el, idx) => {
+    //     if (shopId === el.shopInfo.id) {
+    //       sum.push(el.rating);
+    //       count++;
+    //     }
+    //     if (idx === allData.length - 1) {
+    //       shopAveRatingData.push({
+    //         shopId,
+    //         aveRating: sum.reduce((acc, cur) => acc + cur) / count,
+    //       });
+    //       sum = [];
+    //       count = 0;
+    //     }
+    //   });
+    // }
+
+    let friendWriteBoard = {};
     allData.forEach((el) => {
-      if (!shopIdArr.includes(el.shopInfo.id)) {
-        shopIdArr.push(el.shopInfo.id);
-      }
+      friendWriteBoard[el.shopInfo.id] = [];
     });
-    shopIdArr.sort((a, b) => a - b);
-    for (let shopId of shopIdArr) {
-      let sum = [];
-      let count = 0;
-      allData.forEach((el, idx) => {
-        if (shopId === el.shopInfo.id) {
-          sum.push(el.rating);
-          count++;
-        }
-        if (idx === allData.length - 1) {
-          shopAveRatingData.push({
-            shopId,
-            aveRating: sum.reduce((acc, cur) => acc + cur) / count,
+    console.log(friendWriteBoard);
+
+    for (let key in friendWriteBoard) {
+      allData.forEach((el) => {
+        if (Number(key) === el.shopInfo.id) {
+          friendWriteBoard[key].push({
+            userId: el.user.id,
+            name: el.user.name,
+            nickname: el.user.nickname,
+            foodType: el.user.foodType,
+            foodStyle: el.user.foodStyle,
+            profileImg: el.user.profileImage,
+            hashtag: el.hashtag.map((hashtagEl) => hashtagEl.tag),
+            relatedImg: el.img.map((el) => {
+              return {
+                img: el.foodImage,
+                created_at: el.created_at,
+              };
+            }),
+            rating: el.rating,
+            reviews: el.reviews,
           });
-          sum = [];
-          count = 0;
         }
       });
     }
-
     const refinedData = allData.map((el, idx) => {
       // 앞에서 구한 aveRating을 적용시켜준다.
-      for (let aveData of shopAveRatingData) {
-        if (el.shopInfo.id === aveData.shopId) {
-          el.shopInfo.aveRating = aveData.aveRating;
-        }
-      }
-
+      // for (let aveData of shopAveRatingData) {
+      //   if (el.shopInfo.id === aveData.shopId) {
+      //     el.shopInfo.aveRating = aveData.aveRating;
+      //   }
+      // }
+      let friends = friendWriteBoard[el.shopInfo.id].filter(
+        (user) => user.userId !== el.user.id,
+      );
+      console.log(friends);
       return {
+        title: el.shopInfo.title,
+        relatedImg: el.img.map((el) => {
+          return {
+            img: el.foodImage,
+            created_at: el.created_at,
+          };
+        }),
+        foodCategory: el.shopInfo.foodCategory,
+        location: el.shopInfo.location,
         userId: el.user.id,
         name: el.user.name,
+        foodType: el.user.foodType,
+        foodStyle: el.user.foodStyle,
         nickname: el.user.nickname,
-        profile: el.user.profileImage,
-        image: el.img.map((el) => el.foodImage),
         // 배열 내 객체 형태, hashtag: el.hashtag,
         hashtag: el.hashtag.map((hashtagEl) => hashtagEl.tag),
-        title: el.shopInfo.title,
-        location: el.shopInfo.location,
+        rating: el.rating,
+        profileImg: el.user.profileImage,
         reviews: el.reviews,
-        aveRating: Math.round(el.shopInfo.aveRating * 10) / 10,
         created_at: el.created_at,
+        menu: el.shopInfo.menu,
+        // aveRating: Math.round(el.shopInfo.aveRating * 10) / 10,
+        friends: friends,
       };
     });
 
@@ -165,7 +218,7 @@ export class SearchService {
   }
 
   async findResult(id: number, query: string) {
-    if (query === '') return new HttpException('검색어를 입력해주세요', 404);
+    if (query === '') throw new HttpException('검색어를 입력해주세요', 404);
     const client = new Client({});
     let isUserData = true;
     let isShopData = true;
@@ -399,7 +452,7 @@ export class SearchService {
 
     //! userData와 shopData가 모두 없을 경우
     if (!isUserData && !isShopData)
-      return new HttpException(`No Matching Results`, 404);
+      throw new HttpException(`No Matching Results`, 404);
 
     return {
       data: { user: nickNameUserList, shopInfo: shopInfo },
@@ -410,7 +463,7 @@ export class SearchService {
   }
 
   async findFriend(id: number, query: string) {
-    if (query === '') return new HttpException('Please Input Query', 401);
+    if (query === '') throw new HttpException('Please Input Query', 401);
     // 이름/닉네임/연락처로 친구만 검색
 
     // 1. 입력된 id를 바탕으로 친구를 검색
@@ -441,7 +494,7 @@ export class SearchService {
     });
 
     if (correctList.length === 0)
-      return new HttpException('No Matching Results', 404);
+      throw new HttpException('No Matching Results', 404);
 
     // 4. 친구이면서 query로 검색된 유저정보를 정리
     const friendData = await this.usersRepository

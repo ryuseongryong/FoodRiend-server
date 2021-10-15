@@ -146,7 +146,7 @@ export class BoardService {
     });
 
     if (existBoard.length === 0) {
-      return new HttpException('Not found board', 401);
+      throw new HttpException('Not found board', 401);
     }
 
     await this.boardRepository.update(
