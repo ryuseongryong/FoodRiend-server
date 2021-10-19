@@ -60,6 +60,7 @@ export class AuthService {
     res.cookie('access_token', 'expired!', {});
     return res.status(200).json({
       message: '로그아웃이 완료되었습니다.',
+      status: 200,
     });
   }
 }

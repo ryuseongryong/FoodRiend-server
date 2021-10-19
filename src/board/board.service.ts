@@ -96,7 +96,7 @@ export class BoardService {
       });
     }
 
-    //! bookmark에 등록된 경우 삭제하기 (가보고싶어요 -> 먹어봤어요 변경)
+    //! bookmark에 등록된 경우 삭제하기 (가보고싶어요 -> 먹어봤어요 변경? 안함)
     // 작성해야함
 
     // aveRating 계산해서 설정하기
