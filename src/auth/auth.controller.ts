@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   Res,
@@ -10,6 +11,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { DeleteUserDto } from '../users/dto/delete-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -33,9 +35,15 @@ export class AuthController {
     return this.usersService.createUserInfo(req.user.userId, body);
   }
 
-  // @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get('logout')
   logout(@Req() req, @Res() res: Response) {
     return this.authService.logout(req, res);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('deleteInfo')
+  deleteUserInfo(@Req() req, @Body() body: DeleteUserDto) {
+    return this.usersService.deleteUserInfo(req.user.userId, body);
   }
 }

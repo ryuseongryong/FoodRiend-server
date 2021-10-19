@@ -1,11 +1,12 @@
 import {
   ConsoleLogger,
+  HttpCode,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateUserDto, PatchUserDto } from './dto/create-user.dto';
 import { Users } from '../entities/Users.entity';
 import { Friend_List } from '../entities/Friend_List.entity';
@@ -15,6 +16,7 @@ import { Hashtag } from '../entities/Hashtag.entity';
 import { Shop_Info } from '../entities/Shop_Info.entity';
 import { BookmarkType } from '../search/bookmark.type';
 import { Upload_Image } from '../entities/Upload_Image.entity';
+import { DeleteUserDto } from './dto/delete-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -282,5 +284,62 @@ export class UsersService {
       },
       status: 200,
     };
+  }
+
+  async deleteUserInfo(id: number, body: DeleteUserDto) {
+    if (!id) {
+      throw new HttpException('wrong id information!', HttpStatus.NOT_FOUND);
+    }
+    if (!body.checkDelete) {
+      throw new HttpException(
+        'recheck delete agreement',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+    if (id && body.checkDelete) {
+      // 1. bookmark 삭제
+      await this.bookmarkRepository.delete({ user_id: id });
+
+      // 2. uploadImage 삭제
+      const writeBoardId = await this.writeBoardRepository.find({
+        user_id: id,
+      });
+      const writeBoardIdList = writeBoardId.map((writeBoard) => {
+        return writeBoard.id;
+      });
+      await this.uploadImageRepository.delete({
+        write_board_id: In(writeBoardIdList),
+      });
+
+      // 3. Friend_List 삭제
+      await this.friendListRepository
+        .createQueryBuilder('friend')
+        .delete()
+        .from(Friend_List)
+        .where('user_id = :userId', { userId: id })
+        .orWhere('friend = :friendId', { friendId: id })
+        .execute();
+
+      // 4. Hashtag 삭제
+      await this.hashtagRepository.delete({
+        write_board_id: In(writeBoardIdList),
+      });
+
+      // 5. Write_Board 삭제
+      await this.writeBoardRepository.delete({
+        user_id: id,
+      });
+
+      // 6. shopInfo는 삭제하지 않음
+      // 7. user정보 삭제
+      await this.usersRepository.delete({
+        id: id,
+      });
+      return {
+        data: {
+          userId: id,
+        },
+      };
+    }
   }
 }

@@ -449,6 +449,9 @@ export class SearchService {
       ...shopInfoList,
       ...conflictAndFoodCheckShopInfoGoogleAPI,
     ];
+    if (shopInfo.length === 0) {
+      isShopData = false;
+    }
 
     //! userData와 shopData가 모두 없을 경우
     if (!isUserData && !isShopData)
