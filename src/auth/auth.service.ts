@@ -66,7 +66,7 @@ export class AuthService {
 
   async checkTokenExpires(user: any, res: Response) {
     return res.status(200).json({
-      userId: user.userId,
+      data: { userId: user.userId },
       message: '토큰이 유효합니다.',
       status: 200,
     });
